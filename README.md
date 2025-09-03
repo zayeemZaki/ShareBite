@@ -1,15 +1,30 @@
-# 🍽️ ShareBite - Food Sharing React Native App
+# 🍽️ ShareBite - Food Sharing App
 
-ShareBite is a cross-platform mobile application built with React Native that helps reduce food waste by connecting people who have excess food with those who need it. The app promotes community sharing and environmental sustainability.
+ShareBite is a React Native application that connects restaurants, shelters, and volunteers to reduce food waste and help communities in need. Restaurants can share surplus food, shelters can request meals, and volunteers can facilitate deliveries.
 
-## 📱 Features
+![React Native](https://img.shields.io/badge/React%20Native-0.81.1-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-- **🏠 Browse Food**: Discover available food items shared by community members
-- **🍽️ Share Food**: Post your excess food for others to claim
-- **📍 Location-Aware**: Find food near your location
-- **🌓 Dark Mode**: Automatic light/dark theme support
-- **📱 Cross-Platform**: Works seamlessly on Android and iOS
-- **⚡ Fast Performance**: Optimized with TypeScript and modern React Native
+## 🌟 Features
+
+### 🏪 For Restaurants
+- Share surplus food with nearby shelters
+- Track food donations and impact metrics
+- Manage food listings and availability
+- View donation history and statistics
+
+### 🏠 For Shelters
+- Browse available food from local restaurants
+- Request specific food items based on needs
+- Track received donations and people fed
+- Manage pickup schedules
+
+### 🚗 For Volunteers
+- Find nearby food pickup/delivery opportunities
+- Accept delivery assignments
+- Track delivery statistics and impact
+- Coordinate with restaurants and shelters
 
 ## 🚀 Quick Start
 
@@ -17,22 +32,373 @@ ShareBite is a cross-platform mobile application built with React Native that he
 
 Before you begin, ensure you have the following installed:
 
-- **Node.js** (v20 or higher) - [Download here](https://nodejs.org/)
-- **npm** or **yarn** package manager
-- **Git** for version control
+- **Node.js** (>= 20.0.0)
+- **Java Development Kit** (JDK 17 - 20)
+- **Android Studio** (for Android development)
+- **Xcode** (for iOS development, macOS only)
+- **CocoaPods** (for iOS dependencies, macOS only)
 
-### Platform-Specific Requirements
+### Installation
 
-#### Android Development
-- **Android Studio** - [Download here](https://developer.android.com/studio)
-- **Android SDK** (API level 35 or higher)
-- **Java Development Kit (JDK)** 17 or higher
-- **Android Emulator** or physical Android device
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/zayeemZaki/ShareBite.git
+   cd ShareBite
+   ```
 
-#### iOS Development (macOS only)
-- **Xcode** 14 or higher - [Download from Mac App Store](https://apps.apple.com/us/app/xcode/id497799835)
-- **iOS Simulator** or physical iOS device
-- **CocoaPods** - Install with: `sudo gem install cocoapods`
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **For iOS (macOS only):**
+   ```bash
+   cd ios && pod install && cd ..
+   ```
+
+### Running the App
+
+1. **Start the Metro bundler:**
+   ```bash
+   npm start
+   ```
+
+2. **Run on Android:**
+   ```bash
+   npm run android
+   ```
+
+3. **Run on iOS (macOS only):**
+   ```bash
+   npm run ios
+   ```
+
+## 🔐 Demo Credentials
+
+The app includes demo accounts for testing all user roles:
+
+| Role | Email | Password |
+|------|-------|----------|
+| 🏪 Restaurant | `restaurant@test.com` | `password` |
+| 🏠 Shelter | `shelter@test.com` | `password` |
+| 🚗 Volunteer | `volunteer@test.com` | `password` |
+
+## 📱 Platform Support
+
+### ✅ Android
+- **API Level:** 24+ (Android 7.0+)
+- **Architecture:** arm64-v8a, armeabi-v7a, x86, x86_64
+- **Build Tools:** Gradle 8.14.3
+- **Status:** Fully supported and tested
+
+### ✅ iOS
+- **iOS Version:** 12.0+
+- **Architectures:** arm64
+- **Build Tools:** Xcode 15+
+- **Status:** Fully supported (requires macOS for development)
+
+## 🏗️ Architecture
+
+### Project Structure
+```
+ShareBite/
+├── src/
+│   ├── components/           # Reusable UI components
+│   │   ├── auth/            # Authentication-related components
+│   │   │   ├── LoginForm.tsx
+│   │   │   ├── RegisterForm.tsx
+│   │   │   └── RoleSelector.tsx
+│   │   ├── common/          # Common UI components
+│   │   │   ├── Button.tsx
+│   │   │   └── Header.tsx
+│   │   └── FoodCard.tsx     # Food item display component
+│   ├── context/             # React Context providers
+│   │   └── AuthContext.tsx  # Authentication state management
+│   ├── navigation/          # App navigation logic
+│   │   └── AppNavigator.tsx
+│   ├── screens/             # Screen components
+│   │   ├── auth/
+│   │   │   └── AuthScreen.tsx
+│   │   ├── restaurant/
+│   │   │   └── RestaurantDashboard.tsx
+│   │   ├── shelter/
+│   │   │   └── ShelterDashboard.tsx
+│   │   └── volunteer/
+│   │       └── VolunteerDashboard.tsx
+│   └── types/               # TypeScript type definitions
+│       └── auth.ts
+├── android/                 # Android-specific files
+├── ios/                     # iOS-specific files
+├── __tests__/               # Test files
+└── App.tsx                  # Root component
+```
+
+### Key Components
+
+#### 🔐 Authentication System
+- **AuthContext**: Manages user authentication state using React Context
+- **Role-based routing**: Different interfaces for restaurants, shelters, and volunteers
+- **Persistent login**: Uses React Native's built-in storage (currently in-memory for demo)
+
+#### 🎨 UI Components
+- **Reusable components**: Consistent Button, Header, and FoodCard components
+- **Dark mode support**: Automatically adapts to system theme preferences
+- **Responsive design**: Works across different screen sizes
+
+#### 📱 Navigation
+- **Conditional routing**: Shows appropriate screens based on authentication status
+- **Role-specific dashboards**: Each user type sees relevant features and data
+
+## 🛠️ Development
+
+### Environment Setup
+
+1. **Java Environment (for Android):**
+   ```bash
+   # Install Java 17 (recommended)
+   brew install openjdk@17
+   
+   # Set JAVA_HOME
+   export JAVA_HOME=/opt/homebrew/opt/openjdk@17
+   export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"
+   ```
+
+2. **Android SDK:**
+   - Install Android Studio
+   - Install SDK platforms: API 35, API 36
+   - Set ANDROID_HOME environment variable
+
+3. **iOS Setup (macOS only):**
+   ```bash
+   # Install CocoaPods
+   sudo gem install cocoapods
+   
+   # Install iOS dependencies
+   cd ios && pod install
+   ```
+
+### Development Scripts
+
+```bash
+# Start Metro bundler
+npm start
+
+# Run on Android
+npm run android
+
+# Run on iOS
+npm run ios
+
+# Run tests
+npm test
+
+# Type checking
+npx tsc --noEmit
+
+# Linting
+npm run lint
+```
+
+### Building for Production
+
+#### Android APK
+```bash
+cd android
+./gradlew assembleRelease
+```
+
+#### iOS Build
+```bash
+# Open in Xcode
+open ios/ShareBiteApp.xcworkspace
+
+# Or build from command line
+npx react-native run-ios --configuration Release
+```
+
+## 🧪 Testing
+
+### Unit Tests
+```bash
+npm test
+```
+
+### Manual Testing Checklist
+
+#### Authentication Flow
+- [ ] Login with restaurant account
+- [ ] Login with shelter account  
+- [ ] Login with volunteer account
+- [ ] Register new account with role selection
+- [ ] Logout functionality
+
+#### Role-Specific Features
+- [ ] Restaurant dashboard displays correctly
+- [ ] Shelter can view available food
+- [ ] Volunteer can see delivery opportunities
+- [ ] Dark mode switches properly
+- [ ] Navigation between screens works
+
+## 🔧 Configuration
+
+### App Configuration
+- **App Name**: ShareBite
+- **Bundle ID**: `com.sharebiteapp`
+- **Version**: 0.0.1
+
+### Environment Variables
+```bash
+# Development
+NODE_ENV=development
+
+# Java (Android)
+JAVA_HOME=/opt/homebrew/opt/openjdk@17
+
+# Android SDK
+ANDROID_HOME=/Users/[username]/Library/Android/sdk
+```
+
+## 🚨 Troubleshooting
+
+### Common Issues
+
+#### Android Build Failures
+1. **JDK Version Issues:**
+   ```bash
+   # Check Java version
+   java -version
+   
+   # Should be JDK 17-20, not 23+
+   ```
+
+2. **Android SDK Issues:**
+   ```bash
+   # Check SDK installation
+   npx react-native doctor
+   ```
+
+3. **Clear Cache:**
+   ```bash
+   # Clear React Native cache
+   npx react-native start --reset-cache
+   
+   # Clear Android build cache
+   cd android && ./gradlew clean
+   ```
+
+#### iOS Build Issues
+1. **CocoaPods Issues:**
+   ```bash
+   cd ios
+   pod deintegrate
+   pod install
+   ```
+
+2. **Xcode Issues:**
+   - Clean build folder (Cmd+Shift+K)
+   - Clear derived data
+   - Restart Xcode
+
+#### Metro Bundler Issues
+```bash
+# Reset Metro cache
+npx react-native start --reset-cache
+
+# Reset npm cache
+npm start -- --reset-cache
+```
+
+## 🔄 State Management
+
+### Authentication Flow
+1. **App Launch**: Check for stored user data
+2. **Login**: Validate credentials, store user data, update auth state
+3. **Navigation**: Route to appropriate dashboard based on user role
+4. **Logout**: Clear user data, return to login screen
+
+### Data Flow
+```
+User Input → AuthContext → State Update → Navigation → Screen Render
+```
+
+## 🎨 Theming & Styling
+
+### Dark Mode Support
+The app automatically adapts to system theme preferences:
+- Uses `useColorScheme()` hook to detect theme
+- Conditional styling based on dark/light mode
+- Consistent color palette across all components
+
+### Color Palette
+```typescript
+// Light Mode
+background: '#ffffff'
+text: '#2c3e50'
+card: '#f8f9fa'
+primary: '#27ae60'
+secondary: '#3498db'
+
+// Dark Mode  
+background: '#1a1a1a'
+text: '#ffffff'
+card: '#2c2c2c'
+primary: '#27ae60'
+secondary: '#3498db'
+```
+
+## 🔮 Future Enhancements
+
+### Backend Integration
+- [ ] REST API integration
+- [ ] Real user authentication with JWT
+- [ ] Database integration (PostgreSQL/MongoDB)
+- [ ] File upload for food images
+
+### Features
+- [ ] Real-time messaging between users
+- [ ] GPS tracking for deliveries
+- [ ] Push notifications
+- [ ] Food expiration tracking
+- [ ] Rating and review system
+- [ ] Analytics dashboard
+
+### Technical Improvements
+- [ ] Add persistent storage (AsyncStorage or SQLite)
+- [ ] Implement proper error handling
+- [ ] Add loading states and skeleton screens
+- [ ] Offline support with data synchronization
+- [ ] Performance optimization
+- [ ] Accessibility improvements
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📞 Support
+
+If you encounter any issues or have questions:
+
+1. Check the [Troubleshooting](#-troubleshooting) section
+2. Search existing [GitHub Issues](https://github.com/zayeemZaki/ShareBite/issues)
+3. Create a new issue with detailed information
+
+## 🙏 Acknowledgments
+
+- React Native team for the excellent framework
+- Open source community for various packages and tools
+- Food banks and shelters for inspiring this project
+
+---
+
+**Made with ❤️ for reducing food waste and helping communities**
 
 ## 🛠️ Installation & Setup
 
