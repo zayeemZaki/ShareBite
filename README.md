@@ -294,59 +294,83 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Step 1: Start Metro
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+# ShareBite 🍽️
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+A React Native food sharing app that helps reduce food waste by connecting people who have extra food with those who need it.
 
-```sh
-# Using npm
+## Features
+
+- Browse available food near you
+- Share your extra food with the community
+- Dark mode support
+- Clean, modern UI
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (>= 20)
+- React Native CLI
+- Android Studio (for Android development)
+- Xcode (for iOS development on macOS)
+
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. For iOS, install CocoaPods dependencies:
+   ```bash
+   cd ios && pod install && cd ..
+   ```
+
+### Running the App
+
+#### Start the Metro bundler:
+```bash
 npm start
-
-# OR using Yarn
-yarn start
 ```
 
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
+#### Run on Android:
+```bash
 npm run android
-
-# OR using Yarn
-yarn android
 ```
 
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
+#### Run on iOS:
+```bash
 npm run ios
-
-# OR using Yarn
-yarn ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+### Testing
+
+Run the test suite:
+```bash
+npm test
+```
+
+## Project Structure
+
+```
+src/
+  components/     # Reusable UI components
+  data/          # Mock data and types
+__tests__/       # Test files
+android/         # Android-specific code
+ios/             # iOS-specific code
+```
+
+## Built With
+
+- React Native 0.81.1
+- TypeScript
+- React 19.1.0
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 This is one way to run your app — you can also build it directly from Android Studio or Xcode.
 
