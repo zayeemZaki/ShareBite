@@ -185,6 +185,7 @@ npm start
 
 # Run on Android
 npm run android
+npx react-native run-android
 
 # Run on iOS
 npm run ios
