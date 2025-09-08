@@ -10,10 +10,12 @@ import {
 import { Header } from '../../components/common/Header';
 import { Button } from '../../components/common/Button';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigation } from '../../context/NavigationContext';
 
 export const RestaurantDashboard: React.FC = () => {
   const isDarkMode = useColorScheme() === 'dark';
   const { state } = useAuth();
+  const navigation = useNavigation();
   const styles = getStyles(isDarkMode);
 
   const stats = [
