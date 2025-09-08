@@ -5,6 +5,7 @@ import { RestaurantDashboard } from '../screens/restaurant/RestaurantDashboard';
 import { ShelterDashboard } from '../screens/shelter/ShelterDashboard';
 import { VolunteerDashboard } from '../screens/volunteer/VolunteerDashboard';
 import { useAuth } from '../context/AuthContext';
+import { ShareFood } from '../screens/restaurant/ShareFood';
 
 export const AppNavigator: React.FC = () => {
   const { state } = useAuth();
@@ -42,3 +43,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
+
+const RestaurantStack = createStackNavigator();
+
+function RestaurantNavigator() {
+  return (
+    <RestaurantStack.Navigator>
+      {/* Other screens */}
+      <RestaurantStack.Screen name="ShareFood" component={ShareFood} />
+      {/* ... */}
+    </RestaurantStack.Navigator>
+  );
+}

@@ -38,7 +38,7 @@ export const RestaurantDashboard: React.FC = () => {
       
       <ScrollView style={styles.content}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📊 Your Impact</Text>
+          <Text style={styles.sectionTitle}>📊 Your Impact!</Text>
           <View style={styles.statsContainer}>
             {stats.map((stat, index) => (
               <View key={index} style={styles.statCard}>
@@ -50,11 +50,11 @@ export const RestaurantDashboard: React.FC = () => {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🍽️ Quick Actions</Text>
+          <Text style={styles.sectionTitle}>🍽️ Quick Actions!</Text>
           <View style={styles.actionButtons}>
             <Button
-              title="Share New Food"
-              onPress={() => {}}
+              title="Share New Fooood"
+              onPress={() => navigation.navigate('ShareFood')}
               style={styles.actionButton}
             />
             <Button
