@@ -1,11 +1,14 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { User, AuthState, LoginCredentials, RegisterCredentials } from '../types/auth';
+import { AuthService } from '../services/AuthService';
+import { firebaseAuth } from '../config/firebase';
 
 interface AuthContextType {
   state: AuthState;
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
   logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -37,56 +40,6 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   }
 };
 
-// Temporary in-memory storage
-let storedUser: User | null = null;
-
-// Mock authentication functions - replace with real API calls
-const mockLogin = async (credentials: LoginCredentials): Promise<User> => {
-  // Simulate API delay
-  await new Promise<void>(resolve => setTimeout(resolve, 1000));
-  
-  // Mock user data based on email
-  const mockUsers: Record<string, User> = {
-    'restaurant@test.com': {
-      id: '1',
-      email: 'restaurant@test.com',
-      name: 'Mario\'s Kitchen',
-      role: 'restaurant',
-    },
-    'shelter@test.com': {
-      id: '2',
-      email: 'shelter@test.com',
-      name: 'Hope Shelter',
-      role: 'shelter',
-    },
-    'volunteer@test.com': {
-      id: '3',
-      email: 'volunteer@test.com',
-      name: 'John Volunteer',
-      role: 'volunteer',
-    },
-  };
-
-  const user = mockUsers[credentials.email];
-  if (!user || credentials.password !== 'password') {
-    throw new Error('Invalid credentials');
-  }
-  
-  return user;
-};
-
-const mockRegister = async (credentials: RegisterCredentials): Promise<User> => {
-  // Simulate API delay
-  await new Promise<void>(resolve => setTimeout(resolve, 1000));
-  
-  return {
-    id: Date.now().toString(),
-    email: credentials.email,
-    name: credentials.name,
-    role: credentials.role,
-  };
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, {
     user: null,
@@ -96,17 +49,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     checkStoredAuth();
+    
+    // Listen for Firebase auth state changes
+    const unsubscribe = firebaseAuth.onAuthStateChanged(async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          const user = await AuthService.getCurrentUser();
+          dispatch({ type: 'SET_USER', payload: user });
+        } catch (error) {
+          console.error('Error getting current user:', error);
+          dispatch({ type: 'SET_LOADING', payload: false });
+        }
+      } else {
+        dispatch({ type: 'LOGOUT' });
+      }
+    });
+
+    return unsubscribe;
   }, []);
 
   const checkStoredAuth = async () => {
     try {
-      // Use in-memory storage temporarily
-      if (storedUser) {
-        dispatch({ type: 'SET_USER', payload: storedUser });
+      const user = await AuthService.getCurrentUser();
+      if (user) {
+        dispatch({ type: 'SET_USER', payload: user });
+      } else {
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
     } catch (error) {
       console.error('Error checking stored auth:', error);
-    } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
@@ -114,9 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (credentials: LoginCredentials) => {
     dispatch({ type: 'SET_LOADING', payload: true });
     try {
-      const user = await mockLogin(credentials);
-      // Use in-memory storage temporarily
-      storedUser = user;
+      const user = await AuthService.login(credentials);
       dispatch({ type: 'SET_USER', payload: user });
     } catch (error) {
       dispatch({ type: 'SET_LOADING', payload: false });
@@ -127,9 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (credentials: RegisterCredentials) => {
     dispatch({ type: 'SET_LOADING', payload: true });
     try {
-      const user = await mockRegister(credentials);
-      // Use in-memory storage temporarily
-      storedUser = user;
+      const user = await AuthService.register(credentials);
       dispatch({ type: 'SET_USER', payload: user });
     } catch (error) {
       dispatch({ type: 'SET_LOADING', payload: false });
@@ -139,16 +106,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      // Use in-memory storage temporarily
-      storedUser = null;
+      await AuthService.logout();
       dispatch({ type: 'LOGOUT' });
     } catch (error) {
       console.error('Error during logout:', error);
     }
   };
 
+  const resetPassword = async (email: string) => {
+    try {
+      await AuthService.resetPassword(email);
+    } catch (error) {
+      throw error;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ state, login, register, logout }}>
+    <AuthContext.Provider value={{ state, login, register, logout, resetPassword }}>
       {children}
     </AuthContext.Provider>
   );

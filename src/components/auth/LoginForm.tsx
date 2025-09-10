@@ -22,7 +22,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   onSwitchToRegister,
   isDarkMode = false,
 }) => {
-  const { login, state } = useAuth();
+  const { login, resetPassword, state } = useAuth();
   const [credentials, setCredentials] = useState<LoginCredentials>({
     email: '',
     password: '',
@@ -38,18 +38,26 @@ export const LoginForm: React.FC<LoginFormProps> = ({
 
     try {
       await login(credentials);
-    } catch (error) {
-      Alert.alert('Login Failed', 'Invalid email or password');
+    } catch (error: any) {
+      Alert.alert('Login Failed', error.message || 'Invalid email or password');
     }
   };
 
-  const fillDemoCredentials = (role: 'restaurant' | 'shelter' | 'volunteer') => {
-    const demoCredentials = {
-      restaurant: { email: 'restaurant@test.com', password: 'password' },
-      shelter: { email: 'shelter@test.com', password: 'password' },
-      volunteer: { email: 'volunteer@test.com', password: 'password' },
-    };
-    setCredentials(demoCredentials[role]);
+  const handleForgotPassword = async () => {
+    if (!credentials.email) {
+      Alert.alert('Error', 'Please enter your email address first');
+      return;
+    }
+
+    try {
+      await resetPassword(credentials.email);
+      Alert.alert(
+        'Password Reset',
+        'Password reset email sent! Check your inbox and follow the instructions.'
+      );
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to send password reset email');
+    }
   };
 
   return (
@@ -89,29 +97,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({
             style={styles.loginButton}
           />
 
-          <View style={styles.demoSection}>
-            <Text style={styles.demoTitle}>Quick Demo Access:</Text>
-            <View style={styles.demoButtons}>
-              <Button
-                title="Restaurant"
-                onPress={() => fillDemoCredentials('restaurant')}
-                variant="secondary"
-                style={styles.demoButton}
-              />
-              <Button
-                title="Shelter"
-                onPress={() => fillDemoCredentials('shelter')}
-                variant="secondary"
-                style={styles.demoButton}
-              />
-              <Button
-                title="Volunteer"
-                onPress={() => fillDemoCredentials('volunteer')}
-                variant="secondary"
-                style={styles.demoButton}
-              />
-            </View>
-          </View>
+          <Button
+            title="Forgot Password?"
+            onPress={handleForgotPassword}
+            variant="secondary"
+            style={styles.forgotPasswordButton}
+          />
 
           <Button
             title="Don't have an account? Sign Up"
@@ -165,23 +156,8 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
   loginButton: {
     marginBottom: 24,
   },
-  demoSection: {
+  forgotPasswordButton: {
     marginBottom: 24,
-  },
-  demoTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: isDarkMode ? '#ffffff' : '#2c3e50',
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  demoButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
-  demoButton: {
-    flex: 1,
   },
   switchButton: {
     marginTop: 8,

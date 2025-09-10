@@ -52,8 +52,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
     try {
       await register(credentials);
-    } catch (error) {
-      Alert.alert('Registration Failed', 'Please try again');
+    } catch (error: any) {
+      Alert.alert('Registration Failed', error.message || 'Please try again');
     }
   };
 
