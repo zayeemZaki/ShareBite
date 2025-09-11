@@ -1,10 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-
-export type ScreenName = 
-  | 'RestaurantDashboard' 
-  | 'ShareFood' 
-  | 'ShelterDashboard' 
-  | 'VolunteerDashboard';
+import { ScreenName } from '../types/navigation';
 
 interface NavigationContextType {
   currentScreen: ScreenName;

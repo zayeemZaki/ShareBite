@@ -4,10 +4,9 @@ import {
   Text,
   ScrollView,
   StyleSheet,
-  TouchableOpacity,
   useColorScheme,
 } from 'react-native';
-import { Header } from '../../components/common/Header';
+import { HeaderWithBurger } from '../../components/common/HeaderWithBurger';
 import { Button } from '../../components/common/Button';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigation } from '../../context/NavigationContext';
@@ -18,85 +17,46 @@ export const RestaurantDashboard: React.FC = () => {
   const navigation = useNavigation();
   const styles = getStyles(isDarkMode);
 
-  const stats = [
-    { label: 'Food Items Shared', value: '24' },
-    { label: 'Families Fed', value: '150' },
-    { label: 'Waste Reduced', value: '45 lbs' },
-  ];
-
-  const recentShares = [
-    { id: '1', item: 'Pizza Slices', quantity: '12 slices', status: 'Claimed' },
+  const currentItems = [
+    { id: '1', item: 'Pizza Slices', quantity: '12 slices', status: 'Available' },
     { id: '2', item: 'Fresh Salad', quantity: '5 bowls', status: 'Available' },
-    { id: '3', item: 'Bread Loaves', quantity: '8 loaves', status: 'Delivered' },
+    { id: '3', item: 'Bread Loaves', quantity: '8 loaves', status: 'Available' },
   ];
 
   return (
     <View style={styles.container}>
-      <Header
+      <HeaderWithBurger
         title={`Welcome, ${state.user?.name}`}
-        showLogout={true}
         isDarkMode={isDarkMode}
+        currentScreen="RestaurantDashboard"
       />
-      
+
       <ScrollView style={styles.content}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📊 Your Impact!</Text>
-          <View style={styles.statsContainer}>
-            {stats.map((stat, index) => (
-              <View key={index} style={styles.statCard}>
-                <Text style={styles.statValue}>{stat.value}</Text>
-                <Text style={styles.statLabel}>{stat.label}</Text>
+          <Text style={styles.sectionTitle}>🍽️ Current Listed Food Items</Text>
+          {currentItems.map((item) => (
+            <View key={item.id} style={styles.itemCard}>
+              <View style={styles.itemInfo}>
+                <Text style={styles.itemName}>{item.item}</Text>
+                <Text style={styles.itemQuantity}>{item.quantity}</Text>
               </View>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🍽️ Quick Actions!</Text>
-          <View style={styles.actionButtons}>
-            <Button
-              title="Share New Fooood"
-              onPress={() => navigation.navigate('ShareFood')}
-              style={styles.actionButton}
-            />
-            <Button
-              title="View My Listings"
-              onPress={() => {}}
-              variant="secondary"
-              style={styles.actionButton}
-            />
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📝 Recent Shares</Text>
-          {recentShares.map((share) => (
-            <View key={share.id} style={styles.shareCard}>
-              <View style={styles.shareInfo}>
-                <Text style={styles.shareItem}>{share.item}</Text>
-                <Text style={styles.shareQuantity}>{share.quantity}</Text>
-              </View>
-              <View style={[
-                styles.statusBadge,
-                { backgroundColor: getStatusColor(share.status) }
-              ]}>
-                <Text style={styles.statusText}>{share.status}</Text>
+              <View style={[styles.statusBadge, { backgroundColor: '#f39c12' }]}>
+                <Text style={styles.statusText}>{item.status}</Text>
               </View>
             </View>
           ))}
         </View>
+
+        <View style={styles.section}>
+          <Button
+            title="Post More Items"
+            onPress={() => navigation.navigate('ShareFood')}
+            style={styles.postButton}
+          />
+        </View>
       </ScrollView>
     </View>
   );
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'Available': return '#f39c12';
-    case 'Claimed': return '#3498db';
-    case 'Delivered': return '#27ae60';
-    default: return '#95a5a6';
-  }
 };
 
 const getStyles = (isDarkMode: boolean) => StyleSheet.create({
@@ -116,36 +76,7 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
     color: isDarkMode ? '#ffffff' : '#2c3e50',
     marginBottom: 16,
   },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: isDarkMode ? '#2c2c2c' : '#f8f9fa',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#3498db',
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: isDarkMode ? '#bdc3c7' : '#7f8c8d',
-    textAlign: 'center',
-  },
-  actionButtons: {
-    gap: 12,
-  },
-  actionButton: {
-    marginBottom: 8,
-  },
-  shareCard: {
+  itemCard: {
     backgroundColor: isDarkMode ? '#2c2c2c' : '#f8f9fa',
     borderRadius: 12,
     padding: 16,
@@ -154,16 +85,16 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  shareInfo: {
+  itemInfo: {
     flex: 1,
   },
-  shareItem: {
+  itemName: {
     fontSize: 16,
     fontWeight: '600',
     color: isDarkMode ? '#ffffff' : '#2c3e50',
     marginBottom: 4,
   },
-  shareQuantity: {
+  itemQuantity: {
     fontSize: 14,
     color: isDarkMode ? '#bdc3c7' : '#7f8c8d',
   },
@@ -176,5 +107,8 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
     color: '#ffffff',
     fontSize: 12,
     fontWeight: '600',
+  },
+  postButton: {
+    marginTop: 12,
   },
 });

@@ -11,7 +11,7 @@ import {
   Alert,
   FlatList,
 } from 'react-native';
-import { Header } from '../../components/common/Header';
+import { HeaderWithBurger } from '../../components/common/HeaderWithBurger';
 import { Button } from '../../components/common/Button';
 
 type FoodType = 'Vegan' | 'Vegetarian' | 'Non Veg';
@@ -248,7 +248,11 @@ export const ShareFood: React.FC<{ navigation?: any }> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Header title="Share Food" showLogout={true} />
+      <HeaderWithBurger
+        title="Share Food"
+        isDarkMode={false}
+        currentScreen="ShareFood"
+      />
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>

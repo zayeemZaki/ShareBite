@@ -1,7 +1,10 @@
-export type ScreenName = 
-  | 'RestaurantDashboard' 
-  | 'ShareFood' 
-  | 'ShelterDashboard' 
+export type ScreenName =
+  | 'RestaurantDashboard'
+  | 'ShareFood'
+  | 'RestaurantHistory'
+  | 'NearbyShelters'
+  | 'AccountSettings'
+  | 'ShelterDashboard'
   | 'VolunteerDashboard';
 
 export type UserRole = 'restaurant' | 'shelter' | 'volunteer';
