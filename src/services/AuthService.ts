@@ -1,5 +1,6 @@
 import { firebaseAuth } from '../config/firebase';
 import { User, UserRole, LoginCredentials, RegisterCredentials } from '../types/auth';
+import { ProfileService } from './ProfileService';
 
 export class AuthService {
   // Login with email and password
@@ -12,11 +13,24 @@ export class AuthService {
 
       const firebaseUser = userCredential.user;
       
+      // Get user profile from Firestore
+      const userProfile = await ProfileService.getUserProfile(firebaseUser.uid);
+      
+      if (userProfile) {
+        return {
+          id: userProfile.id,
+          email: userProfile.email,
+          name: userProfile.name,
+          role: userProfile.role,
+        };
+      }
+
+      // Fallback if no profile found
       const user: User = {
         id: firebaseUser.uid,
         email: firebaseUser.email!,
         name: firebaseUser.displayName || 'User',
-        role: 'restaurant', // Default role - in production, store this in Firestore
+        role: 'restaurant', // Default role - should rarely happen
       };
 
       return user;
@@ -40,6 +54,15 @@ export class AuthService {
         displayName: credentials.name,
       });
 
+      // Create user profile in Firestore
+      await ProfileService.createUserProfile(
+        firebaseUser.uid,
+        firebaseUser.email!,
+        credentials.name,
+        credentials.role
+      );
+
+      // Return user object (profile is created successfully)
       const user: User = {
         id: firebaseUser.uid,
         email: firebaseUser.email!,
@@ -68,13 +91,28 @@ export class AuthService {
       const firebaseUser = firebaseAuth.currentUser;
       if (!firebaseUser) return null;
 
+      // Get user profile from Firestore
+      const userProfile = await ProfileService.getUserProfile(firebaseUser.uid);
+      
+      if (userProfile && userProfile.name && userProfile.email && userProfile.role) {
+        return {
+          id: userProfile.id,
+          email: userProfile.email,
+          name: userProfile.name,
+          role: userProfile.role,
+        };
+      }
+
+      // Fallback if no profile found in Firestore
+      console.log('⚠️ Using fallback profile for user:', firebaseUser.uid);
       return {
         id: firebaseUser.uid,
         email: firebaseUser.email!,
         name: firebaseUser.displayName || 'User',
-        role: 'restaurant', // Default role - in production, store this in Firestore
+        role: 'restaurant', // Default role
       };
     } catch (error) {
+      console.error('❌ Error in getCurrentUser:', error);
       return null;
     }
   }
