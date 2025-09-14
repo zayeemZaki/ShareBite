@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 
 interface HeaderProps {
@@ -26,7 +26,14 @@ export const Header: React.FC<HeaderProps> = ({
           <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>
       )}
-      
+
+      {/* App Logo on the left */}
+      <Image
+        source={require('../../../ShareBiteLogo.jpg')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+
       <Text style={styles.title}>{title}</Text>
       
       {showLogout && (
@@ -47,6 +54,11 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
     backgroundColor: isDarkMode ? '#2c2c2c' : '#f8f9fa',
     borderBottomWidth: 1,
     borderBottomColor: isDarkMode ? '#444' : '#e0e0e0',
+  },
+  logo: {
+    width: 40,
+    height: 40,
+    marginRight: 8,
   },
   title: {
     fontSize: 18,

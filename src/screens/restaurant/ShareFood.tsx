@@ -24,6 +24,7 @@ interface FoodItemInput {
   pickupStart: Date;
   pickupEnd: Date;
   quantity: number;
+  isHalal: boolean;
 }
 
 export const ShareFood: React.FC<{ navigation?: any }> = ({ navigation }) => {
@@ -36,6 +37,7 @@ export const ShareFood: React.FC<{ navigation?: any }> = ({ navigation }) => {
     pickupStart: new Date(),
     pickupEnd: new Date(),
     quantity: 1,
+    isHalal: false,
   });
 
   const handleAddFood = () => {
@@ -52,6 +54,7 @@ export const ShareFood: React.FC<{ navigation?: any }> = ({ navigation }) => {
       pickupStart: new Date(),
       pickupEnd: new Date(),
       quantity: 1,
+      isHalal: false,
     });
     setModalVisible(false);
     Alert.alert('Success', 'Food item added successfully!');
@@ -200,6 +203,25 @@ export const ShareFood: React.FC<{ navigation?: any }> = ({ navigation }) => {
                 </TouchableOpacity>
               ))}
             </View>
+
+            <Text style={styles.label}>Halal</Text>
+            <TouchableOpacity
+              style={[
+                styles.halalButton,
+                newFood.isHalal && styles.halalButtonSelected,
+              ]}
+              onPress={() => setNewFood(prev => ({ ...prev, isHalal: !prev.isHalal }))}
+            >
+              <View style={[styles.checkbox, newFood.isHalal && styles.checkboxSelected]}>
+                <Text style={styles.checkboxText}>{newFood.isHalal ? '☑️' : '□'}</Text>
+              </View>
+              <Text style={[
+                styles.halalButtonText,
+                newFood.isHalal && styles.halalButtonTextSelected,
+              ]}>
+                Halal
+              </Text>
+            </TouchableOpacity>
 
             <Text style={styles.label}>Pickup Date & Time Range</Text>
             <View style={styles.dateTimeRow}>
@@ -538,5 +560,44 @@ const styles = StyleSheet.create({
   modalButtons: {
     gap: 12,
     marginTop: 24,
+  },
+  halalButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  halalButtonSelected: {
+    backgroundColor: '#d4edda',
+    borderColor: '#27ae60',
+  },
+  halalButtonText: {
+    fontSize: 16,
+    color: '#2c3e50',
+    marginLeft: 8,
+  },
+  halalButtonTextSelected: {
+    color: '#27ae60',
+    fontWeight: '600',
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxSelected: {
+    backgroundColor: '#27ae60',
+    borderColor: '#27ae60',
+  },
+  checkboxText: {
+    fontSize: 14,
+    color: '#fff',
   },
 });

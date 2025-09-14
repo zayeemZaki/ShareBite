@@ -7,6 +7,7 @@ import {
   Modal,
   FlatList,
   useColorScheme,
+  Image,
 } from 'react-native';
 import { useNavigation } from '../../context/NavigationContext';
 import { useAuth } from '../../context/AuthContext';
@@ -16,23 +17,26 @@ interface HeaderWithBurgerProps {
   title: string;
   isDarkMode?: boolean;
   currentScreen?: ScreenName;
+  showLogo?: boolean;
 }
 
 export const HeaderWithBurger: React.FC<HeaderWithBurgerProps> = ({
   title,
   isDarkMode = false,
   currentScreen,
+  showLogo = false,
 }) => {
   const [menuVisible, setMenuVisible] = useState(false);
   const navigation = useNavigation();
   const { logout } = useAuth();
   const styles = getStyles(isDarkMode);
 
-  const menuItems: { id: string; title: string; screen?: ScreenName; action?: () => void }[] = [
+  const menuItems: { id: string; title: string; screen?: ScreenName; action?: () => void; textColor?: string }[] = [
     { id: '1', title: '🏠 Dashboard', screen: 'RestaurantDashboard' },
     { id: '2', title: '📊 History', screen: 'RestaurantHistory' },
     { id: '3', title: '🏢 Nearby Shelters', screen: 'NearbyShelters' },
     { id: '4', title: '⚙️ Settings', screen: 'AccountSettings' },
+    { id: '5', title: 'Logout', action: logout, textColor: '#e74c3c' },
   ];
 
   const handleMenuItemPress = (item: typeof menuItems[0]) => {
@@ -69,14 +73,22 @@ export const HeaderWithBurger: React.FC<HeaderWithBurgerProps> = ({
 
       <Text style={styles.title}>{title}</Text>
 
-      <TouchableOpacity
-        onPress={handleGoBack}
-        style={styles.backButton}
-      >
-        <Text style={styles.backButtonText}>
-          {currentScreen === 'RestaurantDashboard' ? '🚪 Exit' : '⬅️ Back'}
-        </Text>
-      </TouchableOpacity>
+      {showLogo ? (
+        <Image
+          source={require('../../../ShareBiteLogo.jpg')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      ) : currentScreen !== 'RestaurantDashboard' ? (
+        <TouchableOpacity
+          onPress={handleGoBack}
+          style={styles.backButton}
+        >
+          <Text style={styles.backButtonText}>
+            {'⬅️ Back'}
+          </Text>
+        </TouchableOpacity>
+      ) : null}
 
       <Modal
         visible={menuVisible}
@@ -98,7 +110,7 @@ export const HeaderWithBurger: React.FC<HeaderWithBurgerProps> = ({
                   style={styles.menuItem}
                   onPress={() => handleMenuItemPress(item)}
                 >
-                  <Text style={styles.menuItemText}>{item.title}</Text>
+                  <Text style={[styles.menuItemText, item.textColor ? { color: item.textColor } : {}]}>{item.title}</Text>
                 </TouchableOpacity>
               )}
             />
@@ -138,6 +150,11 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
     height: 2,
     backgroundColor: isDarkMode ? '#ffffff' : '#2c3e50',
     borderRadius: 1,
+  },
+  logo: {
+    width: 40,
+    height: 40,
+    marginHorizontal: 8,
   },
   title: {
     fontSize: 18,

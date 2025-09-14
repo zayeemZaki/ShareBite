@@ -29,6 +29,7 @@ export const RestaurantDashboard: React.FC = () => {
         title={`Welcome, ${state.user?.name}`}
         isDarkMode={isDarkMode}
         currentScreen="RestaurantDashboard"
+        showLogo={true}
       />
 
       <ScrollView style={styles.content}>

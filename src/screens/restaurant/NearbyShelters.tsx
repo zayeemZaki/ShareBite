@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Linking,
   useColorScheme,
+  TextInput,
 } from 'react-native';
 import { HeaderWithBurger } from '../../components/common/HeaderWithBurger';
 
@@ -14,38 +15,50 @@ export const NearbyShelters: React.FC = () => {
   const isDarkMode = useColorScheme() === 'dark';
   const styles = getStyles(isDarkMode);
 
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [range, setRange] = useState('5'); // default 5 miles
+
   const shelters = [
     {
       id: '1',
       name: 'Community Food Bank',
       address: '123 Main St, Downtown',
       contact: '+1 (555) 123-4567',
-      distance: '0.5 miles',
+      distance: 0.5,
       capacity: 'High',
+      city: 'Downtown',
+      state: 'CA',
     },
     {
       id: '2',
       name: 'Hope Center',
       address: '456 Oak Ave, Midtown',
       contact: '+1 (555) 234-5678',
-      distance: '1.2 miles',
+      distance: 1.2,
       capacity: 'Medium',
+      city: 'Midtown',
+      state: 'CA',
     },
     {
       id: '3',
       name: 'Shelter for All',
       address: '789 Pine Rd, Uptown',
       contact: '+1 (555) 345-6789',
-      distance: '2.1 miles',
+      distance: 2.1,
       capacity: 'Low',
+      city: 'Uptown',
+      state: 'CA',
     },
     {
       id: '4',
       name: 'Food Share Network',
       address: '321 Elm St, Riverside',
       contact: '+1 (555) 456-7890',
-      distance: '3.0 miles',
+      distance: 3.0,
       capacity: 'High',
+      city: 'Riverside',
+      state: 'CA',
     },
   ];
 
@@ -62,6 +75,14 @@ export const NearbyShelters: React.FC = () => {
     }
   };
 
+  const filteredShelters = shelters.filter(shelter => {
+    const cityMatch = city.trim() === '' || shelter.city.toLowerCase().includes(city.trim().toLowerCase());
+    const stateMatch = state.trim() === '' || shelter.state.toLowerCase().includes(state.trim().toLowerCase());
+    const rangeNum = Number(range);
+    const rangeMatch = isNaN(rangeNum) || shelter.distance <= rangeNum;
+    return cityMatch && stateMatch && rangeMatch;
+  });
+
   return (
     <View style={styles.container}>
       <HeaderWithBurger
@@ -71,36 +92,60 @@ export const NearbyShelters: React.FC = () => {
       />
 
       <ScrollView style={styles.content}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🍽️ Food Shelters Near You</Text>
-          <Text style={styles.subtitle}>
-            Connect with local shelters to share your surplus food and help those in need.
-          </Text>
+        <View style={styles.filterSection}>
+          <Text style={styles.filterLabel}>City</Text>
+          <TextInput
+            style={styles.filterInput}
+            placeholder="Enter city"
+            value={city}
+            onChangeText={setCity}
+          />
+          <Text style={styles.filterLabel}>State</Text>
+          <TextInput
+            style={styles.filterInput}
+            placeholder="Enter state"
+            value={state}
+            onChangeText={setState}
+          />
+          <Text style={styles.filterLabel}>Range (miles)</Text>
+          <TextInput
+            style={styles.filterInput}
+            placeholder="Enter range in miles"
+            keyboardType="numeric"
+            value={range}
+            onChangeText={setRange}
+          />
         </View>
 
-        {shelters.map((shelter) => (
-          <View key={shelter.id} style={styles.shelterCard}>
-            <View style={styles.shelterHeader}>
-              <View style={styles.shelterInfo}>
-                <Text style={styles.shelterName}>{shelter.name}</Text>
-                <Text style={styles.shelterAddress}>{shelter.address}</Text>
-              </View>
-              <View style={[styles.capacityBadge, { backgroundColor: getCapacityColor(shelter.capacity) }]}>
-                <Text style={styles.capacityText}>{shelter.capacity}</Text>
-              </View>
-            </View>
-
-            <View style={styles.shelterDetails}>
-              <Text style={styles.distanceText}>📍 {shelter.distance} away</Text>
-              <TouchableOpacity
-                style={styles.callButton}
-                onPress={() => handleCall(shelter.contact)}
-              >
-                <Text style={styles.callButtonText}>📞 Call: {shelter.contact}</Text>
-              </TouchableOpacity>
-            </View>
+        {filteredShelters.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>No shelters found matching the criteria.</Text>
           </View>
-        ))}
+        ) : (
+          filteredShelters.map((shelter) => (
+            <View key={shelter.id} style={styles.shelterCard}>
+              <View style={styles.shelterHeader}>
+                <View style={styles.shelterInfo}>
+                  <Text style={styles.shelterName}>{shelter.name}</Text>
+                  <Text style={styles.shelterAddress}>{shelter.address}</Text>
+                </View>
+                <View style={[styles.capacityBadge, { backgroundColor: getCapacityColor(shelter.capacity) }]}>
+                  <Text style={styles.capacityText}>{shelter.capacity}</Text>
+                </View>
+              </View>
+
+              <View style={styles.shelterDetails}>
+                <Text style={styles.distanceText}>📍 {shelter.distance} miles away</Text>
+                <TouchableOpacity
+                  style={styles.callButton}
+                  onPress={() => handleCall(shelter.contact)}
+                >
+                  <Text style={styles.callButtonText}>📞 Call: {shelter.contact}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))
+        )}
 
         <View style={styles.section}>
           <Text style={styles.noteTitle}>💡 How to Help</Text>
@@ -124,19 +169,28 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
   content: {
     flex: 1,
   },
-  section: {
+  filterSection: {
     padding: 20,
+    backgroundColor: isDarkMode ? '#2c2c2c' : '#f0f0f0',
+    borderRadius: 12,
+    margin: 16,
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: isDarkMode ? '#ffffff' : '#2c3e50',
-    marginBottom: 8,
-  },
-  subtitle: {
+  filterLabel: {
     fontSize: 14,
-    color: isDarkMode ? '#bdc3c7' : '#7f8c8d',
-    marginBottom: 16,
+    fontWeight: '600',
+    marginBottom: 6,
+    color: isDarkMode ? '#ffffff' : '#2c3e50',
+  },
+  filterInput: {
+    backgroundColor: isDarkMode ? '#3c3c3c' : '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: isDarkMode ? '#555' : '#ccc',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 12,
+    fontSize: 14,
+    color: isDarkMode ? '#ffffff' : '#2c3e50',
   },
   shelterCard: {
     backgroundColor: isDarkMode ? '#2c2c2c' : '#f8f9fa',
@@ -204,5 +258,24 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
     fontSize: 14,
     color: isDarkMode ? '#bdc3c7' : '#7f8c8d',
     lineHeight: 20,
+  },
+  section: {
+    padding: 20,
+  },
+  emptyState: {
+    padding: 32,
+    alignItems: 'center',
+    backgroundColor: isDarkMode ? '#2c2c2c' : '#fff',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: isDarkMode ? '#555' : '#ecf0f1',
+    borderStyle: 'dashed',
+    margin: 16,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: isDarkMode ? '#bdc3c7' : '#95a5a6',
+    textAlign: 'center',
+    lineHeight: 22,
   },
 });
