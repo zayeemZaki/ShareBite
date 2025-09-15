@@ -6,14 +6,14 @@ import {
   StyleSheet,
   TouchableOpacity,
   Linking,
-  useColorScheme,
   TextInput,
 } from 'react-native';
 import { HeaderWithBurger } from '../../components/common/HeaderWithBurger';
+import { useTheme } from '../../context/ThemeContext';
 
 export const NearbyShelters: React.FC = () => {
-  const isDarkMode = useColorScheme() === 'dark';
-  const styles = getStyles(isDarkMode);
+  const { isDarkMode, colors, typography, borderRadius, spacing, shadows } = useTheme();
+  const styles = getStyles(isDarkMode, colors, typography, borderRadius, spacing, shadows);
 
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
@@ -87,7 +87,6 @@ export const NearbyShelters: React.FC = () => {
     <View style={styles.container}>
       <HeaderWithBurger
         title="Nearby Shelters"
-        isDarkMode={isDarkMode}
         currentScreen="NearbyShelters"
       />
 
@@ -161,121 +160,129 @@ export const NearbyShelters: React.FC = () => {
   );
 };
 
-const getStyles = (isDarkMode: boolean) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
-  },
-  content: {
-    flex: 1,
-  },
-  filterSection: {
-    padding: 20,
-    backgroundColor: isDarkMode ? '#2c2c2c' : '#f0f0f0',
-    borderRadius: 12,
-    margin: 16,
-  },
-  filterLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 6,
-    color: isDarkMode ? '#ffffff' : '#2c3e50',
-  },
-  filterInput: {
-    backgroundColor: isDarkMode ? '#3c3c3c' : '#fff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: isDarkMode ? '#555' : '#ccc',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginBottom: 12,
-    fontSize: 14,
-    color: isDarkMode ? '#ffffff' : '#2c3e50',
-  },
-  shelterCard: {
-    backgroundColor: isDarkMode ? '#2c2c2c' : '#f8f9fa',
-    borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 20,
-    marginBottom: 12,
-  },
-  shelterHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  shelterInfo: {
-    flex: 1,
-  },
-  shelterName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: isDarkMode ? '#ffffff' : '#2c3e50',
-    marginBottom: 4,
-  },
-  shelterAddress: {
-    fontSize: 14,
-    color: isDarkMode ? '#bdc3c7' : '#7f8c8d',
-  },
-  capacityBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  capacityText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  shelterDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  distanceText: {
-    fontSize: 14,
-    color: isDarkMode ? '#bdc3c7' : '#7f8c8d',
-  },
-  callButton: {
-    backgroundColor: '#3498db',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  callButtonText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  noteTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: isDarkMode ? '#ffffff' : '#2c3e50',
-    marginBottom: 8,
-  },
-  noteText: {
-    fontSize: 14,
-    color: isDarkMode ? '#bdc3c7' : '#7f8c8d',
-    lineHeight: 20,
-  },
-  section: {
-    padding: 20,
-  },
-  emptyState: {
-    padding: 32,
-    alignItems: 'center',
-    backgroundColor: isDarkMode ? '#2c2c2c' : '#fff',
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: isDarkMode ? '#555' : '#ecf0f1',
-    borderStyle: 'dashed',
-    margin: 16,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: isDarkMode ? '#bdc3c7' : '#95a5a6',
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-});
+const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadius: any, spacing: any, shadows: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      flex: 1,
+    },
+    filterSection: {
+      padding: spacing.lg,
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.md,
+      margin: spacing.md,
+      ...shadows,
+    },
+    filterLabel: {
+      fontSize: typography.sizes.regular,
+      fontWeight: typography.fontWeightMedium,
+      marginBottom: spacing.xs,
+      color: colors.textPrimary,
+    },
+    filterInput: {
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.sm,
+      borderWidth: 1,
+      borderColor: colors.border,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+      marginBottom: spacing.sm,
+      fontSize: typography.sizes.regular,
+      color: colors.textPrimary,
+    },
+    shelterCard: {
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.md,
+      padding: spacing.md,
+      marginHorizontal: spacing.lg,
+      marginBottom: spacing.sm,
+      ...shadows,
+    },
+    shelterHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: spacing.sm,
+    },
+    shelterInfo: {
+      flex: 1,
+    },
+    shelterName: {
+      fontSize: typography.sizes.large,
+      fontWeight: typography.fontWeightMedium,
+      color: colors.textPrimary,
+      marginBottom: spacing.xs,
+    },
+    shelterAddress: {
+      fontSize: typography.sizes.regular,
+      color: colors.textSecondary,
+    },
+    capacityBadge: {
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+      borderRadius: borderRadius.lg,
+    },
+    capacityText: {
+      color: colors.surface,
+      fontSize: typography.sizes.small,
+      fontWeight: typography.fontWeightMedium,
+    },
+    shelterDetails: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    distanceText: {
+      fontSize: typography.sizes.regular,
+      color: colors.textSecondary,
+    },
+    callButton: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      borderRadius: borderRadius.sm,
+      shadowColor: colors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: isDarkMode ? 0.3 : 0.1,
+      shadowRadius: isDarkMode ? 6 : 4,
+      elevation: isDarkMode ? 6 : 3,
+    },
+    callButtonText: {
+      color: colors.surface,
+      fontSize: typography.sizes.regular,
+      fontWeight: typography.fontWeightMedium,
+    },
+    noteTitle: {
+      fontSize: typography.sizes.large,
+      fontWeight: typography.fontWeightMedium,
+      color: colors.textPrimary,
+      marginBottom: spacing.sm,
+    },
+    noteText: {
+      fontSize: typography.sizes.regular,
+      color: colors.textSecondary,
+      lineHeight: 20,
+    },
+    section: {
+      padding: spacing.lg,
+    },
+    emptyState: {
+      padding: spacing.xl,
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.md,
+      borderWidth: 2,
+      borderColor: colors.border,
+      borderStyle: 'dashed',
+      margin: spacing.md,
+    },
+    emptyText: {
+      fontSize: typography.sizes.medium,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 22,
+    },
+  });

@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { HeaderWithBurger } from '../../components/common/HeaderWithBurger';
 import { Button } from '../../components/common/Button';
+import { useTheme } from '../../context/ThemeContext';
 
 type FoodType = 'Vegan' | 'Vegetarian' | 'Non Veg';
 type AllergenType = 'Gluten' | 'Nuts' | 'Dairy' | 'Soy' | 'Eggs' | 'Fish';
@@ -28,6 +29,8 @@ interface FoodItemInput {
 }
 
 export const ShareFood: React.FC<{ navigation?: any }> = ({ navigation }) => {
+  const { isDarkMode, colors, typography, borderRadius, spacing, shadows } = useTheme();
+  const styles = getStyles(isDarkMode, colors, typography, borderRadius, spacing, shadows);
   const [foodItems, setFoodItems] = useState<FoodItemInput[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [newFood, setNewFood] = useState<FoodItemInput>({
@@ -272,7 +275,7 @@ export const ShareFood: React.FC<{ navigation?: any }> = ({ navigation }) => {
     <View style={styles.container}>
       <HeaderWithBurger
         title="Share Food"
-        isDarkMode={false}
+        isDarkMode={isDarkMode}
         currentScreen="ShareFood"
       />
       
@@ -321,283 +324,281 @@ export const ShareFood: React.FC<{ navigation?: any }> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  content: {
-    flex: 1,
-    padding: 16,
-  },
-  section: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#2c3e50',
-    marginBottom: 8,
-  },
-  sectionSubtitle: {
-    fontSize: 16,
-    color: '#7f8c8d',
-    marginBottom: 16,
-    lineHeight: 22,
-  },
-  foodList: {
-    marginBottom: 16,
-  },
-  foodItemCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  foodItemHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  foodItemName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#2c3e50',
-    flex: 1,
-  },
-  removeButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#e74c3c',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  removeButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  foodItemDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  foodItemType: {
-    fontSize: 14,
-    color: '#27ae60',
-    fontWeight: '500',
-  },
-  foodItemQuantity: {
-    fontSize: 14,
-    color: '#7f8c8d',
-    fontWeight: '500',
-  },
-  allergensContainer: {
-    flexDirection: 'row',
-    marginBottom: 8,
-    flexWrap: 'wrap',
-  },
-  allergensLabel: {
-    fontSize: 14,
-    color: '#e67e22',
-    fontWeight: '500',
-  },
-  allergensText: {
-    fontSize: 14,
-    color: '#e67e22',
-    flex: 1,
-  },
-  timeContainer: {
-    marginTop: 4,
-  },
-  timeText: {
-    fontSize: 12,
-    color: '#95a5a6',
-  },
-  emptyState: {
-    padding: 32,
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#ecf0f1',
-    borderStyle: 'dashed',
-  },
-  emptyStateText: {
-    fontSize: 16,
-    color: '#95a5a6',
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  buttonContainer: {
-    gap: 12,
-    paddingBottom: 24,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 24,
-    width: '90%',
-    maxHeight: '80%',
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#2c3e50',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#2c3e50',
-    marginBottom: 8,
-    marginTop: 16,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: '#f8f9fa',
-    marginBottom: 8,
-  },
-  typeContainer: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 8,
-  },
-  typeButton: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    alignItems: 'center',
-  },
-  typeButtonSelected: {
-    backgroundColor: '#3498db',
-    borderColor: '#3498db',
-  },
-  typeButtonText: {
-    fontSize: 14,
-    color: '#2c3e50',
-    fontWeight: '500',
-  },
-  typeButtonTextSelected: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  allergenContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 8,
-  },
-  allergenButton: {
-    backgroundColor: '#f8f9fa',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  allergenButtonSelected: {
-    backgroundColor: '#e67e22',
-    borderColor: '#e67e22',
-  },
-  allergenButtonText: {
-    fontSize: 12,
-    color: '#2c3e50',
-    fontWeight: '500',
-  },
-  allergenButtonTextSelected: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  dateTimeRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 8,
-  },
-  dateButton: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    alignItems: 'center',
-  },
-  dateButtonLabel: {
-    fontSize: 12,
-    color: '#7f8c8d',
-    fontWeight: '500',
-    marginBottom: 4,
-  },
-  dateButtonText: {
-    fontSize: 12,
-    color: '#2c3e50',
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-  modalButtons: {
-    gap: 12,
-    marginTop: 24,
-  },
-  halalButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  halalButtonSelected: {
-    backgroundColor: '#d4edda',
-    borderColor: '#27ae60',
-  },
-  halalButtonText: {
-    fontSize: 16,
-    color: '#2c3e50',
-    marginLeft: 8,
-  },
-  halalButtonTextSelected: {
-    color: '#27ae60',
-    fontWeight: '600',
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkboxSelected: {
-    backgroundColor: '#27ae60',
-    borderColor: '#27ae60',
-  },
-  checkboxText: {
-    fontSize: 14,
-    color: '#fff',
-  },
-});
+const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadius: any, spacing: any, shadows: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      flex: 1,
+      padding: spacing.md,
+    },
+    section: {
+      marginBottom: spacing.xl,
+    },
+    sectionTitle: {
+      fontSize: typography.sizes.xlarge,
+      fontWeight: typography.fontWeightBold,
+      color: colors.textPrimary,
+      marginBottom: spacing.sm,
+    },
+    sectionSubtitle: {
+      fontSize: typography.sizes.medium,
+      color: colors.textSecondary,
+      marginBottom: spacing.md,
+      lineHeight: 22,
+    },
+    foodList: {
+      marginBottom: spacing.md,
+    },
+    foodItemCard: {
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.md,
+      padding: spacing.md,
+      marginBottom: spacing.sm,
+      ...shadows,
+    },
+    foodItemHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: spacing.sm,
+    },
+    foodItemName: {
+      fontSize: typography.sizes.large,
+      fontWeight: typography.fontWeightMedium,
+      color: colors.textPrimary,
+      flex: 1,
+    },
+    removeButton: {
+      width: 24,
+      height: 24,
+      borderRadius: borderRadius.lg,
+      backgroundColor: '#e74c3c',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    removeButtonText: {
+      color: '#fff',
+      fontSize: typography.sizes.medium,
+      fontWeight: typography.fontWeightBold,
+    },
+    foodItemDetails: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: spacing.sm,
+    },
+    foodItemType: {
+      fontSize: typography.sizes.regular,
+      color: '#27ae60',
+      fontWeight: typography.fontWeightMedium,
+    },
+    foodItemQuantity: {
+      fontSize: typography.sizes.regular,
+      color: colors.textSecondary,
+      fontWeight: typography.fontWeightMedium,
+    },
+    allergensContainer: {
+      flexDirection: 'row',
+      marginBottom: spacing.sm,
+      flexWrap: 'wrap',
+    },
+    allergensLabel: {
+      fontSize: typography.sizes.regular,
+      color: '#e67e22',
+      fontWeight: typography.fontWeightMedium,
+    },
+    allergensText: {
+      fontSize: typography.sizes.regular,
+      color: '#e67e22',
+      flex: 1,
+    },
+    timeContainer: {
+      marginTop: spacing.sm,
+    },
+    timeText: {
+      fontSize: typography.sizes.small,
+      color: colors.textSecondary,
+    },
+    emptyState: {
+      padding: spacing.xl,
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.md,
+      borderWidth: 2,
+      borderColor: colors.border,
+      borderStyle: 'dashed',
+    },
+    emptyStateText: {
+      fontSize: typography.sizes.medium,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 22,
+    },
+    buttonContainer: {
+      gap: spacing.sm,
+      paddingBottom: spacing.xl,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.7)' : 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalContent: {
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.xl,
+      width: '90%',
+      maxHeight: '80%',
+    },
+    modalTitle: {
+      fontSize: typography.sizes.xlarge,
+      fontWeight: typography.fontWeightBold,
+      color: colors.textPrimary,
+      marginBottom: spacing.xl,
+      textAlign: 'center',
+    },
+    label: {
+      fontSize: typography.sizes.medium,
+      fontWeight: typography.fontWeightMedium,
+      color: colors.textPrimary,
+      marginBottom: spacing.sm,
+      marginTop: spacing.md,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: borderRadius.sm,
+      padding: spacing.sm,
+      fontSize: typography.sizes.medium,
+      backgroundColor: colors.surface,
+      color: colors.textPrimary,
+      marginBottom: spacing.sm,
+    },
+    typeContainer: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      marginBottom: spacing.sm,
+    },
+    typeButton: {
+      flex: 1,
+      backgroundColor: colors.surface,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+      borderRadius: borderRadius.sm,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: 'center',
+    },
+    typeButtonSelected: {
+      backgroundColor: '#3498db',
+      borderColor: '#3498db',
+    },
+    typeButtonText: {
+      fontSize: typography.sizes.regular,
+      color: colors.textPrimary,
+      fontWeight: typography.fontWeightMedium,
+    },
+    typeButtonTextSelected: {
+      color: '#fff',
+      fontWeight: typography.fontWeightMedium,
+    },
+    allergenContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+      marginBottom: spacing.sm,
+    },
+    allergenButton: {
+      backgroundColor: colors.surface,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.sm,
+      borderRadius: borderRadius.xs,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    allergenButtonSelected: {
+      backgroundColor: '#e67e22',
+      borderColor: '#e67e22',
+    },
+    allergenButtonText: {
+      fontSize: typography.sizes.small,
+      color: colors.textPrimary,
+      fontWeight: typography.fontWeightMedium,
+    },
+    allergenButtonTextSelected: {
+      color: '#fff',
+      fontWeight: typography.fontWeightMedium,
+    },
+    dateTimeRow: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      marginBottom: spacing.sm,
+    },
+    dateButton: {
+      flex: 1,
+      backgroundColor: colors.surface,
+      padding: spacing.sm,
+      borderRadius: borderRadius.sm,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: 'center',
+    },
+    dateButtonLabel: {
+      fontSize: typography.sizes.small,
+      color: colors.textSecondary,
+      fontWeight: typography.fontWeightMedium,
+      marginBottom: spacing.sm,
+    },
+    dateButtonText: {
+      fontSize: typography.sizes.small,
+      color: colors.textPrimary,
+      textAlign: 'center',
+      fontWeight: typography.fontWeightMedium,
+    },
+    modalButtons: {
+      gap: spacing.sm,
+      marginTop: spacing.xl,
+    },
+    halalButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      padding: spacing.sm,
+      borderRadius: borderRadius.sm,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    halalButtonSelected: {
+      backgroundColor: '#d4edda',
+      borderColor: '#27ae60',
+    },
+    halalButtonText: {
+      fontSize: typography.sizes.medium,
+      color: colors.textPrimary,
+      marginLeft: spacing.sm,
+    },
+    halalButtonTextSelected: {
+      color: '#27ae60',
+      fontWeight: typography.fontWeightMedium,
+    },
+    checkbox: {
+      width: 20,
+      height: 20,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: borderRadius.xs,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    checkboxSelected: {
+      backgroundColor: '#27ae60',
+      borderColor: '#27ae60',
+    },
+    checkboxText: {
+      fontSize: typography.sizes.regular,
+      color: '#fff',
+    },
+  });
