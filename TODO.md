@@ -1,47 +1,47 @@
-# Restaurant Dashboard Layout Update - TODO
+# Design System Update TODO
 
-## Completed Tasks ✅
+## Phase 1: Theme System Creation
+- [x] Create `src/theme/index.ts` with comprehensive theme including colors, typography, spacing, shadows, and gradients for light/dark modes
 
-### 1. Create New Screens
-- [x] RestaurantHistory.tsx - Shows restaurant history, impact stats, and previous food items uploaded
-- [x] AccountSettings.tsx - Basic account settings page with user information editing
-- [x] NearbyShelters.tsx - Shows nearby food shelters with address, name, contact info
+## Phase 2: Component Updates
+- [x] Update `src/components/common/Button.tsx` to use theme, add dark mode support, and apply modern styling with gradients
+- [x] Update `src/components/common/Header.tsx` to use theme colors, add modern shadows and gradients
+- [x] Update `src/components/common/HeaderWithBurger.tsx` to use theme, enhance with subtle animations and modern design
 
-### 2. Create Header Component
-- [x] HeaderWithBurger.tsx - New header with burger menu dropdown on top left
+## Phase 3: Screen Updates
+- [x] Update `src/screens/restaurant/NearbyShelters.tsx` to use theme, add gradients to cards, improve shadows and modern elements
+- [x] Update `src/screens/restaurant/RestaurantDashboard.tsx` to use theme and apply modern design elements
+- [ ] Update `src/screens/restaurant/ShareFood.tsx` to use theme and apply modern design elements
 
-### 3. Update Restaurant Dashboard
-- [x] Modified RestaurantDashboard.tsx to use HeaderWithBurger
-- [x] Updated main content to show only current listed food items and "Post More Items" button
-- [x] Removed old impact stats and recent shares sections
+## Phase 4: Followup and Testing
+- [ ] Test dark mode consistency across all screens
+- [ ] Verify accessibility (contrast ratios)
+- [ ] Run the app to ensure no regressions
 
-### 4. Update Navigation
-- [x] Updated ScreenName type in navigation.ts to include new screens
-- [x] Updated NavigationContext.tsx to use shared ScreenName type
-- [x] Updated AppNavigator.tsx to handle routing for new screens
+# UI Refactor TODO
 
-### 5. Update Types
-- [x] Updated User interface in auth.ts to include phone and address fields
+## Phase 1: Enhanced Theme and Palette
+- [ ] Update `src/theme/index.ts` with new modern color palette (indigo/violet/cyan), improved typography, and consistent design tokens
 
-## Features Implemented
+## Phase 2: Theme Context for Manual Dark Mode
+- [ ] Create `src/context/ThemeContext.tsx` for manual dark mode toggle that overrides system preference
 
-### Burger Menu Dropdown
-- Restaurant History - View overall impact and previous uploads
-- Nearby Shelters - Find and contact local food shelters
-- Account Settings - Edit personal information
+## Phase 3: Account Settings Dark Mode Toggle
+- [ ] Update `src/screens/restaurant/AccountSettings.tsx` to include dark mode toggle switch and use ThemeContext
 
-### Restaurant Dashboard
-- Clean layout showing only current food items
-- "Post More Items" button to add new food listings
-- Burger menu for navigation to other features
+## Phase 4: Refactor Components to Use ThemeContext
+- [x] Update `src/components/common/Button.tsx` to use ThemeContext
+- [x] Update `src/components/common/Header.tsx` to use ThemeContext
+- [ ] Update `src/components/common/HeaderWithBurger.tsx` to use ThemeContext
+- [x] Update `src/screens/restaurant/NearbyShelters.tsx` to use ThemeContext
+- [x] Update `src/screens/restaurant/RestaurantDashboard.tsx` to use ThemeContext
+- [ ] Update `src/screens/restaurant/ShareFood.tsx` to use ThemeContext
 
-### New Screens
-- **Restaurant History**: Displays impact statistics and history of food donations
-- **Nearby Shelters**: Lists local shelters with contact information and capacity status
-- **Account Settings**: Allows editing of user profile information
+## Phase 5: Modern Styling Enhancements
+- [ ] Apply enhanced shadows, better rounded corners, improved spacing, and subtle gradients across all components
+- [ ] Ensure responsive design for different screen sizes
 
-## Next Steps
-- Test navigation between screens
-- Verify burger menu functionality
-- Test on different screen sizes
-- Implement actual data fetching for dynamic content
+## Phase 6: Testing and Polish
+- [ ] Test dark mode toggle functionality in AccountSettings
+- [ ] Verify accessibility and contrast ratios
+- [ ] Test on different screen sizes and orientations

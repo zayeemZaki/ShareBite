@@ -6,33 +6,37 @@ import {
   TouchableOpacity,
   Modal,
   FlatList,
-  useColorScheme,
+  Image,
 } from 'react-native';
 import { useNavigation } from '../../context/NavigationContext';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { ScreenName } from '../../types/navigation';
 
 interface HeaderWithBurgerProps {
   title: string;
   isDarkMode?: boolean;
   currentScreen?: ScreenName;
+  showLogo?: boolean;
 }
 
 export const HeaderWithBurger: React.FC<HeaderWithBurgerProps> = ({
   title,
-  isDarkMode = false,
   currentScreen,
+  showLogo = false,
 }) => {
   const [menuVisible, setMenuVisible] = useState(false);
   const navigation = useNavigation();
   const { logout } = useAuth();
-  const styles = getStyles(isDarkMode);
+  const { isDarkMode, colors, typography, borderRadius, spacing, shadows } = useTheme();
+  const styles = getStyles(isDarkMode, colors, typography, borderRadius, spacing, shadows);
 
-  const menuItems: { id: string; title: string; screen?: ScreenName; action?: () => void }[] = [
+  const menuItems: { id: string; title: string; screen?: ScreenName; action?: () => void; textColor?: string }[] = [
     { id: '1', title: '🏠 Dashboard', screen: 'RestaurantDashboard' },
     { id: '2', title: '📊 History', screen: 'RestaurantHistory' },
     { id: '3', title: '🏢 Nearby Shelters', screen: 'NearbyShelters' },
     { id: '4', title: '⚙️ Settings', screen: 'AccountSettings' },
+    { id: '5', title: 'Logout', action: logout, textColor: '#e74c3c' },
   ];
 
   const handleMenuItemPress = (item: typeof menuItems[0]) => {
@@ -69,14 +73,22 @@ export const HeaderWithBurger: React.FC<HeaderWithBurgerProps> = ({
 
       <Text style={styles.title}>{title}</Text>
 
-      <TouchableOpacity
-        onPress={handleGoBack}
-        style={styles.backButton}
-      >
-        <Text style={styles.backButtonText}>
-          {currentScreen === 'RestaurantDashboard' ? '🚪 Exit' : '⬅️ Back'}
-        </Text>
-      </TouchableOpacity>
+      {showLogo ? (
+        <Image
+          source={require('../../../ShareBiteLogo.jpg')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      ) : currentScreen !== 'RestaurantDashboard' ? (
+        <TouchableOpacity
+          onPress={handleGoBack}
+          style={styles.backButton}
+        >
+          <Text style={styles.backButtonText}>
+            {'⬅️ Back'}
+          </Text>
+        </TouchableOpacity>
+      ) : null}
 
       <Modal
         visible={menuVisible}
@@ -98,7 +110,7 @@ export const HeaderWithBurger: React.FC<HeaderWithBurgerProps> = ({
                   style={styles.menuItem}
                   onPress={() => handleMenuItemPress(item)}
                 >
-                  <Text style={styles.menuItemText}>{item.title}</Text>
+                  <Text style={[styles.menuItemText, item.textColor ? { color: item.textColor } : {}]}>{item.title}</Text>
                 </TouchableOpacity>
               )}
             />
@@ -109,80 +121,92 @@ export const HeaderWithBurger: React.FC<HeaderWithBurgerProps> = ({
   );
 };
 
-const getStyles = (isDarkMode: boolean) => StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    backgroundColor: isDarkMode ? '#2c2c2c' : '#f8f9fa',
-    borderBottomWidth: 1,
-    borderBottomColor: isDarkMode ? '#444' : '#e0e0e0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  burgerButton: {
-    padding: 8,
-    borderRadius: 6,
-    backgroundColor: isDarkMode ? '#3c3c3c' : '#e8e8e8',
-  },
-  burgerIconContainer: {
-    width: 20,
-    height: 14,
-    justifyContent: 'space-between',
-  },
-  burgerLine: {
-    height: 2,
-    backgroundColor: isDarkMode ? '#ffffff' : '#2c3e50',
-    borderRadius: 1,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: isDarkMode ? '#ffffff' : '#2c3e50',
-    flex: 1,
-    textAlign: 'center',
-  },
-  backButton: {
-    padding: 8,
-    borderRadius: 6,
-    backgroundColor: isDarkMode ? '#3c3c3c' : '#e8e8e8',
-  },
-  backButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: isDarkMode ? '#ffffff' : '#2c3e50',
-  },
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-start',
-  },
-  menuContainer: {
-    backgroundColor: isDarkMode ? '#2c2c2c' : '#ffffff',
-    marginTop: 60,
-    marginLeft: 16,
-    marginRight: 16,
-    borderRadius: 12,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    borderWidth: 1,
-    borderColor: isDarkMode ? '#444' : '#e0e0e0',
-  },
-  menuItem: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: isDarkMode ? '#444' : '#e0e0e0',
-  },
-  menuItemText: {
-    fontSize: 16,
-    color: isDarkMode ? '#ffffff' : '#2c3e50',
-    fontWeight: '500',
-  },
-});
+const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadius: any, spacing: any, shadows: any) =>
+  StyleSheet.create({
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: spacing.md,
+      backgroundColor: colors.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      ...shadows,
+      borderRadius: borderRadius.md,
+    },
+    burgerButton: {
+      padding: spacing.sm,
+      borderRadius: borderRadius.sm,
+      backgroundColor: colors.surface,
+      shadowColor: colors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: isDarkMode ? 0.3 : 0.1,
+      shadowRadius: isDarkMode ? 6 : 4,
+      elevation: isDarkMode ? 6 : 3,
+    },
+    burgerIconContainer: {
+      width: 20,
+      height: 14,
+      justifyContent: 'space-between',
+    },
+    burgerLine: {
+      height: 2,
+      backgroundColor: colors.textPrimary,
+      borderRadius: 1,
+    },
+    logo: {
+      width: 40,
+      height: 40,
+      marginHorizontal: spacing.sm,
+    },
+    title: {
+      fontSize: typography.sizes.large,
+      fontWeight: typography.fontWeightMedium,
+      color: colors.textPrimary,
+      flex: 1,
+      textAlign: 'center',
+    },
+    backButton: {
+      padding: spacing.sm,
+      borderRadius: borderRadius.sm,
+      backgroundColor: colors.surface,
+      shadowColor: colors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: isDarkMode ? 0.3 : 0.1,
+      shadowRadius: isDarkMode ? 6 : 4,
+      elevation: isDarkMode ? 6 : 3,
+    },
+    backButtonText: {
+      fontSize: typography.sizes.medium,
+      fontWeight: typography.fontWeightMedium,
+      color: colors.textPrimary,
+    },
+    overlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'flex-start',
+    },
+    menuContainer: {
+      backgroundColor: colors.surface,
+      marginTop: spacing.lg,
+      marginHorizontal: spacing.md,
+      borderRadius: borderRadius.md,
+      elevation: 8,
+      shadowColor: colors.shadow,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    menuItem: {
+      padding: spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    menuItemText: {
+      fontSize: typography.sizes.medium,
+      color: colors.textPrimary,
+      fontWeight: typography.fontWeightMedium,
+    },
+  });

@@ -7,16 +7,17 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
-  useColorScheme,
 } from 'react-native';
 import { HeaderWithBurger } from '../../components/common/HeaderWithBurger';
 import { Button } from '../../components/common/Button';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 
 export const AccountSettings: React.FC = () => {
-  const isDarkMode = useColorScheme() === 'dark';
   const { state, logout } = useAuth();
-  const styles = getStyles(isDarkMode);
+  const { isDarkMode, toggleDarkMode, colors, typography, spacing, borderRadius } = useTheme();
+
+  const styles = getStyles(isDarkMode, colors, typography, spacing, borderRadius);
 
   const [name, setName] = useState(state.user?.name || '');
   const [email, setEmail] = useState(state.user?.email || '');
@@ -24,7 +25,6 @@ export const AccountSettings: React.FC = () => {
   const [address, setAddress] = useState(state.user?.address || '');
 
   const handleSave = () => {
-    // TODO: Implement save functionality
     Alert.alert('Success', 'Settings saved successfully!');
   };
 
@@ -34,11 +34,14 @@ export const AccountSettings: React.FC = () => {
       'Are you sure you want to delete your account? This action cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: () => {
-          // TODO: Implement delete account functionality
-          Alert.alert('Account Deleted', 'Your account has been deleted.');
-          logout();
-        }},
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert('Account Deleted', 'Your account has been deleted.');
+            logout();
+          },
+        },
       ]
     );
   };
@@ -47,9 +50,18 @@ export const AccountSettings: React.FC = () => {
     <View style={styles.container}>
       <HeaderWithBurger
         title="Account Settings"
-        isDarkMode={isDarkMode}
         currentScreen="AccountSettings"
       />
+
+      {/* 🌙 Toggle Button */}
+      <TouchableOpacity
+        style={styles.themeToggle}
+        onPress={toggleDarkMode}
+      >
+        <Text style={styles.themeToggleText}>
+          Switch to {isDarkMode ? 'Light' : 'Dark'} Mode
+        </Text>
+      </TouchableOpacity>
 
       <ScrollView style={styles.content}>
         <View style={styles.section}>
@@ -62,7 +74,7 @@ export const AccountSettings: React.FC = () => {
               value={name}
               onChangeText={setName}
               placeholder="Enter your name"
-              placeholderTextColor={isDarkMode ? '#888' : '#999'}
+              placeholderTextColor={colors.textSecondary}
             />
           </View>
 
@@ -74,7 +86,7 @@ export const AccountSettings: React.FC = () => {
               onChangeText={setEmail}
               placeholder="Enter your email"
               keyboardType="email-address"
-              placeholderTextColor={isDarkMode ? '#888' : '#999'}
+              placeholderTextColor={colors.textSecondary}
             />
           </View>
 
@@ -86,7 +98,7 @@ export const AccountSettings: React.FC = () => {
               onChangeText={setPhone}
               placeholder="Enter your phone number"
               keyboardType="phone-pad"
-              placeholderTextColor={isDarkMode ? '#888' : '#999'}
+              placeholderTextColor={colors.textSecondary}
             />
           </View>
 
@@ -99,7 +111,7 @@ export const AccountSettings: React.FC = () => {
               placeholder="Enter your restaurant address"
               multiline
               numberOfLines={3}
-              placeholderTextColor={isDarkMode ? '#888' : '#999'}
+              placeholderTextColor={colors.textSecondary}
             />
           </View>
         </View>
@@ -125,57 +137,67 @@ export const AccountSettings: React.FC = () => {
   );
 };
 
-const getStyles = (isDarkMode: boolean) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
-  },
-  content: {
-    flex: 1,
-  },
-  section: {
-    padding: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: isDarkMode ? '#ffffff' : '#2c3e50',
-    marginBottom: 16,
-  },
-  inputGroup: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: isDarkMode ? '#ffffff' : '#2c3e50',
-    marginBottom: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: isDarkMode ? '#444' : '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: isDarkMode ? '#ffffff' : '#2c3e50',
-    backgroundColor: isDarkMode ? '#2c2c2c' : '#f9f9f9',
-  },
-  textArea: {
-    height: 80,
-    textAlignVertical: 'top',
-  },
-  saveButton: {
-    marginBottom: 16,
-  },
-  dangerButton: {
-    backgroundColor: '#e74c3c',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  dangerButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
+const getStyles = (isDarkMode: boolean, colors: any, typography: any, spacing: any, borderRadius: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      flex: 1,
+    },
+    themeToggle: {
+      padding: spacing.sm,
+      backgroundColor: colors.surfaceVariant,
+      alignItems: 'center',
+    },
+    themeToggleText: {
+      color: colors.textPrimary,
+      fontWeight: typography.fontWeightMedium,
+    },
+    section: {
+      padding: spacing.lg,
+    },
+    sectionTitle: {
+      fontSize: typography.sizes.xlarge,
+      fontWeight: typography.fontWeightBold,
+      color: colors.textPrimary,
+      marginBottom: spacing.md,
+    },
+    inputGroup: {
+      marginBottom: spacing.md,
+    },
+    label: {
+      fontSize: typography.sizes.medium,
+      fontWeight: typography.fontWeightMedium,
+      color: colors.textPrimary,
+      marginBottom: spacing.sm,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: borderRadius.sm,
+      padding: spacing.sm,
+      fontSize: typography.sizes.medium,
+      color: colors.textPrimary,
+      backgroundColor: colors.surface,
+    },
+    textArea: {
+      height: 80,
+      textAlignVertical: 'top',
+    },
+    saveButton: {
+      marginBottom: spacing.md,
+    },
+    dangerButton: {
+      backgroundColor: colors.error,
+      padding: spacing.lg,
+      borderRadius: borderRadius.sm,
+      alignItems: 'center',
+    },
+    dangerButtonText: {
+      color: '#ffffff',
+      fontSize: typography.sizes.medium,
+      fontWeight: typography.fontWeightBold,
+    },
+  });

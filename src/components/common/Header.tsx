@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 
 interface HeaderProps {
   title: string;
@@ -13,11 +14,10 @@ export const Header: React.FC<HeaderProps> = ({
   title,
   showLogout = false,
   onBack,
-  isDarkMode = false,
 }) => {
   const { logout } = useAuth();
-
-  const styles = getStyles(isDarkMode);
+  const { isDarkMode, colors, typography, borderRadius, spacing, shadows } = useTheme();
+  const styles = getStyles(isDarkMode, colors, typography, borderRadius, spacing, shadows);
 
   return (
     <View style={styles.header}>
@@ -26,7 +26,14 @@ export const Header: React.FC<HeaderProps> = ({
           <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>
       )}
-      
+
+      {/* App Logo on the left */}
+      <Image
+        source={require('../../../ShareBiteLogo.jpg')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+
       <Text style={styles.title}>{title}</Text>
       
       {showLogout && (
@@ -38,37 +45,59 @@ export const Header: React.FC<HeaderProps> = ({
   );
 };
 
-const getStyles = (isDarkMode: boolean) => StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    backgroundColor: isDarkMode ? '#2c2c2c' : '#f8f9fa',
-    borderBottomWidth: 1,
-    borderBottomColor: isDarkMode ? '#444' : '#e0e0e0',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: isDarkMode ? '#ffffff' : '#2c3e50',
-    flex: 1,
-    textAlign: 'center',
-  },
-  backButton: {
-    padding: 4,
-  },
-  backButtonText: {
-    color: '#3498db',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  logoutButton: {
-    padding: 4,
-  },
-  logoutButtonText: {
-    color: '#e74c3c',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-});
+const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadius: any, spacing: any, shadows: any) =>
+  StyleSheet.create({
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: spacing.md,
+      backgroundColor: colors.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      ...shadows,
+      borderRadius: borderRadius.md,
+    },
+    logo: {
+      width: 40,
+      height: 40,
+      marginRight: spacing.sm,
+    },
+    title: {
+      fontSize: typography.sizes.large,
+      fontWeight: typography.fontWeightMedium,
+      color: colors.textPrimary,
+      flex: 1,
+      textAlign: 'center',
+    },
+    backButton: {
+      padding: spacing.xs,
+      borderRadius: borderRadius.sm,
+      backgroundColor: colors.surface,
+      shadowColor: colors.shadow,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: isDarkMode ? 0.3 : 0.1,
+      shadowRadius: isDarkMode ? 4 : 2,
+      elevation: isDarkMode ? 4 : 2,
+    },
+    backButtonText: {
+      color: colors.primary,
+      fontSize: typography.sizes.medium,
+      fontWeight: typography.fontWeightMedium,
+    },
+    logoutButton: {
+      padding: spacing.xs,
+      borderRadius: borderRadius.sm,
+      backgroundColor: colors.error,
+      shadowColor: colors.shadow,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: isDarkMode ? 0.3 : 0.1,
+      shadowRadius: isDarkMode ? 4 : 2,
+      elevation: isDarkMode ? 4 : 2,
+    },
+    logoutButtonText: {
+      color: colors.surface,
+      fontSize: typography.sizes.small,
+      fontWeight: typography.fontWeightMedium,
+    },
+  });
