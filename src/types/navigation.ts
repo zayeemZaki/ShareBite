@@ -5,6 +5,8 @@ export type ScreenName =
   | 'NearbyShelters'
   | 'AccountSettings'
   | 'ShelterDashboard'
+  | 'ShelterImpact'
+  | 'ShelterNearbyRestaurants'
   | 'VolunteerDashboard';
 
 export type UserRole = 'restaurant' | 'shelter' | 'volunteer';
