@@ -3,6 +3,8 @@ import { View, ActivityIndicator, StyleSheet, useColorScheme } from 'react-nativ
 import { AuthScreen } from '../screens/auth/AuthScreen';
 import { RestaurantDashboard } from '../screens/restaurant/RestaurantDashboard';
 import { ShelterDashboard } from '../screens/shelter/ShelterDashboard';
+import { ShelterImpact } from '../screens/shelter/ShelterImpact';
+import { ShelterNearbyRestaurants } from '../screens/shelter/ShelterNearbyRestaurants';
 import { VolunteerDashboard } from '../screens/volunteer/VolunteerDashboard';
 import { ShareFood } from '../screens/restaurant/ShareFood';
 import { RestaurantHistory } from '../screens/restaurant/RestaurantHistory';
@@ -44,7 +46,16 @@ const RoleBasedNavigator: React.FC = () => {
           return <RestaurantDashboard />;
       }
     case 'shelter':
-      return <ShelterDashboard />;
+      switch (currentScreen) {
+        case 'ShelterImpact':
+          return <ShelterImpact />;
+        case 'ShelterNearbyRestaurants':
+          return <ShelterNearbyRestaurants />;
+        case 'AccountSettings':
+          return <AccountSettings />;
+        default:
+          return <ShelterDashboard />;
+      }
     case 'volunteer':
       return <VolunteerDashboard />;
     default:

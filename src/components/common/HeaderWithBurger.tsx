@@ -31,7 +31,17 @@ export const HeaderWithBurger: React.FC<HeaderWithBurgerProps> = ({
   const { isDarkMode, colors, typography, borderRadius, spacing, shadows } = useTheme();
   const styles = getStyles(isDarkMode, colors, typography, borderRadius, spacing, shadows);
 
-  const menuItems: { id: string; title: string; screen?: ScreenName; action?: () => void; textColor?: string }[] = [
+  const { state } = useAuth();
+  const userRole = state.user?.role;
+  const dashboardScreen = userRole === 'shelter' ? 'ShelterDashboard' : 'RestaurantDashboard';
+
+  const menuItems: { id: string; title: string; screen?: ScreenName; action?: () => void; textColor?: string }[] = userRole === 'shelter' ? [
+    { id: '1', title: '🏠 Dashboard', screen: 'ShelterDashboard' },
+    { id: '2', title: '📊 Impact', screen: 'ShelterImpact' },
+    { id: '3', title: '🏪 Nearby Restaurants', screen: 'ShelterNearbyRestaurants' },
+    { id: '4', title: '⚙️ Settings', screen: 'AccountSettings' },
+    { id: '5', title: 'Logout', action: logout, textColor: '#e74c3c' },
+  ] : [
     { id: '1', title: '🏠 Dashboard', screen: 'RestaurantDashboard' },
     { id: '2', title: '📊 History', screen: 'RestaurantHistory' },
     { id: '3', title: '🏢 Nearby Shelters', screen: 'NearbyShelters' },
@@ -42,6 +52,7 @@ export const HeaderWithBurger: React.FC<HeaderWithBurgerProps> = ({
   const handleMenuItemPress = (item: typeof menuItems[0]) => {
     setMenuVisible(false);
     if (item.screen) {
+      // Remove debug alert for production
       navigation.navigate(item.screen);
     } else if (item.action) {
       item.action();
@@ -49,12 +60,12 @@ export const HeaderWithBurger: React.FC<HeaderWithBurgerProps> = ({
   };
 
   const handleGoBack = () => {
-    if (currentScreen === 'RestaurantDashboard') {
+    if (currentScreen === dashboardScreen) {
       // Go back to login by logging out
       logout();
     } else {
       // Go back to dashboard
-      navigation.navigate('RestaurantDashboard');
+      navigation.navigate(dashboardScreen);
     }
   };
 
@@ -79,7 +90,7 @@ export const HeaderWithBurger: React.FC<HeaderWithBurgerProps> = ({
           style={styles.logo}
           resizeMode="contain"
         />
-      ) : currentScreen !== 'RestaurantDashboard' ? (
+      ) : currentScreen !== dashboardScreen ? (
         <TouchableOpacity
           onPress={handleGoBack}
           style={styles.backButton}
@@ -183,11 +194,12 @@ const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadi
     },
     overlay: {
       flex: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.5)',
       justifyContent: 'flex-start',
+      paddingTop: 10,
     },
     menuContainer: {
-      backgroundColor: colors.surface,
+      backgroundColor: isDarkMode ? '#1e1e1e' : colors.surface,
       marginTop: spacing.lg,
       marginHorizontal: spacing.md,
       borderRadius: borderRadius.md,
@@ -206,7 +218,8 @@ const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadi
     },
     menuItemText: {
       fontSize: typography.sizes.medium,
-      color: colors.textPrimary,
+      color: isDarkMode ? '#e0e0e0' : colors.textPrimary,
       fontWeight: typography.fontWeightMedium,
+      paddingVertical: 6,
     },
   });

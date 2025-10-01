@@ -1,200 +1,318 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   ScrollView,
   StyleSheet,
   useColorScheme,
+  TouchableOpacity,
+  Image,
+  Alert,
 } from 'react-native';
-import { Header } from '../../components/common/Header';
+import { HeaderWithBurger } from '../../components/common/HeaderWithBurger';
 import { Button } from '../../components/common/Button';
-import { FoodCard } from '../../components/FoodCard';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
+
+interface FoodItem {
+  id: string;
+  title: string;
+  restaurantName: string;
+  restaurantPic: string;
+  timePosted: string;
+  distance: number;
+  description: string;
+  isRequested?: boolean;
+  timeLeft: number; // in minutes
+}
 
 export const ShelterDashboard: React.FC = () => {
   const isDarkMode = useColorScheme() === 'dark';
   const { state } = useAuth();
-  const styles = getStyles(isDarkMode);
+  const { colors, typography, borderRadius, spacing, shadows } = useTheme();
+  const styles = getStyles(isDarkMode, colors, typography, borderRadius, spacing, shadows);
 
-  const stats = [
-    { label: 'Food Received', value: '18' },
-    { label: 'People Fed', value: '120' },
-    { label: 'Active Requests', value: '3' },
-  ];
+  const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
+  const [sortBy, setSortBy] = useState<'distance' | 'latest'>('distance');
 
-  const availableFood = [
-    {
-      id: '1',
-      title: '🍕 Pizza Slices',
-      details: '8 slices • 0.3 miles away',
-      description: 'Fresh pizza from Mario\'s Kitchen',
-    },
-    {
-      id: '2',
-      title: '🥗 Fresh Salad',
-      details: '5 bowls • 0.5 miles away',
-      description: 'Organic mixed greens with dressing',
-    },
-  ];
+  // Mock fetch function to simulate fetching food items from restaurants nearby
+  useEffect(() => {
+    const fetchedItems: FoodItem[] = [
+      {
+        id: '1',
+        title: '🍕 Pizza Slices',
+        restaurantName: "Mario's Kitchen",
+        restaurantPic: 'https://example.com/marios-kitchen.jpg',
+        timePosted: '10 minutes ago',
+        distance: 0.3,
+        description: 'Fresh pizza slices available for pickup',
+        isRequested: false,
+        timeLeft: 45,
+      },
+      {
+        id: '2',
+        title: '🥗 Fresh Salad',
+        restaurantName: 'Green Garden',
+        restaurantPic: 'https://example.com/green-garden.jpg',
+        timePosted: '30 minutes ago',
+        distance: 0.5,
+        description: 'Organic mixed greens with dressing',
+        isRequested: true,
+        timeLeft: 30,
+      },
+      {
+        id: '3',
+        title: '🍞 Bread Loaves',
+        restaurantName: 'Baker\'s Delight',
+        restaurantPic: 'https://example.com/bakers-delight.jpg',
+        timePosted: '5 minutes ago',
+        distance: 0.2,
+        description: 'Freshly baked bread loaves',
+        isRequested: false,
+        timeLeft: 60,
+      },
+    ];
+    setFoodItems(fetchedItems);
+  }, []);
 
-  const recentRequests = [
-    { id: '1', item: 'Breakfast items', quantity: 'For 50 people', status: 'Pending' },
-    { id: '2', item: 'Dinner meals', quantity: 'For 30 people', status: 'Fulfilled' },
-    { id: '3', item: 'Fresh produce', quantity: 'Any amount', status: 'Pending' },
-  ];
+  const sortedFoodItems = [...foodItems].sort((a, b) => {
+    if (sortBy === 'distance') {
+      return a.distance - b.distance;
+    } else {
+      // Assuming timePosted is a string like '10 minutes ago', parse to minutes
+      const parseTime = (timeStr: string) => {
+        const match = timeStr.match(/(\d+)\s+minutes?/);
+        return match ? parseInt(match[1], 10) : 0;
+      };
+      return parseTime(a.timePosted) - parseTime(b.timePosted);
+    }
+  });
+
+  const handleRequestPickup = (itemId: string) => {
+    // Implement request pickup logic here
+    Alert.alert('Pickup Requested', `Pickup requested for item ${itemId}`);
+  };
+
+  const handleContactRestaurant = (restaurantName: string) => {
+    // Implement contact restaurant logic here
+    Alert.alert('Contact Restaurant', `Contacting ${restaurantName}`);
+  };
 
   return (
     <View style={styles.container}>
-      <Header
+      <HeaderWithBurger
         title={`Welcome, ${state.user?.name}`}
-        showLogout={true}
-        isDarkMode={isDarkMode}
+        currentScreen="ShelterDashboard"
+        showLogo={true}
       />
-      
+
+      <View style={styles.sortContainer}>
+        <Text style={styles.sortLabel}>Sort by:</Text>
+        <View style={styles.sortButtons}>
+          <Button
+            title="Distance"
+            onPress={() => setSortBy('distance')}
+            variant={sortBy === 'distance' ? 'primary' : 'secondary'}
+            style={styles.sortButton}
+          />
+          <Button
+            title="Latest"
+            onPress={() => setSortBy('latest')}
+            variant={sortBy === 'latest' ? 'primary' : 'secondary'}
+            style={styles.sortButton}
+          />
+        </View>
+      </View>
+
       <ScrollView style={styles.content}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📊 Shelter Statistics</Text>
-          <View style={styles.statsContainer}>
-            {stats.map((stat, index) => (
-              <View key={index} style={styles.statCard}>
-                <Text style={styles.statValue}>{stat.value}</Text>
-                <Text style={styles.statLabel}>{stat.label}</Text>
+        {sortedFoodItems.map((item) => (
+          <View key={item.id} style={[styles.foodCard, { backgroundColor: colors.surface }]}>
+            <View style={styles.foodCardHeader}>
+              <Image source={{ uri: item.restaurantPic }} style={styles.restaurantPic} />
+              <View style={styles.foodInfo}>
+                <View style={styles.titleRow}>
+                  <Text style={[styles.foodTitle, { color: isDarkMode ? '#ffffff' : colors.textPrimary }]}>{item.title}</Text>
+                </View>
+                <Text style={[styles.restaurantName, { color: isDarkMode ? '#cccccc' : colors.textSecondary }]}>{item.restaurantName}</Text>
+                <Text style={[styles.timePosted, { color: isDarkMode ? '#cccccc' : colors.textSecondary }]}>{item.timePosted}</Text>
+                <Text style={[styles.distance, { color: isDarkMode ? '#cccccc' : colors.textSecondary }]}>{item.distance} miles away</Text>
               </View>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🍽️ Quick Actions</Text>
-          <View style={styles.actionButtons}>
-            <Button
-              title="Request Food"
-              onPress={() => {}}
-              style={styles.actionButton}
-            />
-            <Button
-              title="View My Requests"
-              onPress={() => {}}
-              variant="secondary"
-              style={styles.actionButton}
-            />
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🥘 Available Food Near You</Text>
-          {availableFood.map(item => (
-            <FoodCard key={item.id} item={item} isDarkMode={isDarkMode} />
-          ))}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📝 Recent Requests</Text>
-          {recentRequests.map((request) => (
-            <View key={request.id} style={styles.requestCard}>
-              <View style={styles.requestInfo}>
-                <Text style={styles.requestItem}>{request.item}</Text>
-                <Text style={styles.requestQuantity}>{request.quantity}</Text>
-              </View>
-              <View style={[
-                styles.statusBadge,
-                { backgroundColor: getStatusColor(request.status) }
-              ]}>
-                <Text style={styles.statusText}>{request.status}</Text>
+              <View style={styles.sideActions}>
+                {!item.isRequested && (
+                  <TouchableOpacity style={styles.requestButton} onPress={() => handleRequestPickup(item.id)}>
+                    <Text style={styles.requestEmoji}>➕</Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity style={styles.contactButton} onPress={() => handleContactRestaurant(item.restaurantName)}>
+                  <Text style={styles.contactEmoji}>💬</Text>
+                </TouchableOpacity>
+                <View style={styles.timerBox}>
+                  <Text style={styles.timerText}>{item.timeLeft} min</Text>
+                </View>
               </View>
             </View>
-          ))}
-        </View>
+            <Text style={[styles.foodDescription, { color: isDarkMode ? '#cccccc' : colors.textSecondary }]}>{item.description}</Text>
+            {item.isRequested && (
+              <View style={styles.requestedBadgeContainer}>
+                <Text style={styles.requestedBadgeText}>REQUESTED</Text>
+              </View>
+            )}
+          </View>
+        ))}
       </ScrollView>
     </View>
   );
 };
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'Pending': return '#f39c12';
-    case 'Fulfilled': return '#27ae60';
-    case 'Rejected': return '#e74c3c';
-    default: return '#95a5a6';
-  }
-};
+const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadius: any, spacing: any, shadows: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      flex: 1,
+      padding: spacing.md,
+    },
+    sortContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.md,
+      margin: spacing.md,
+      ...shadows,
+    },
+    sortLabel: {
+      fontSize: typography.sizes.medium,
+      fontWeight: typography.fontWeightMedium,
+      color: colors.textPrimary,
+      marginRight: spacing.sm,
+    },
+    sortButtons: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+    },
+    sortButton: {
+      minWidth: 80,
+      paddingHorizontal: spacing.sm,
+    },
+    foodCard: {
+      borderRadius: borderRadius.md,
+      padding: spacing.md,
+      marginBottom: spacing.md,
+      ...shadows,
+    },
+    foodCardHeader: {
+      flexDirection: 'row',
+      marginBottom: spacing.sm,
+    },
+    restaurantPic: {
+      width: 60,
+      height: 60,
+      borderRadius: borderRadius.sm,
+      marginRight: spacing.md,
+    },
+    foodInfo: {
+      flex: 1,
+    },
+    foodTitle: {
+      fontSize: typography.sizes.large,
+      fontWeight: typography.fontWeightBold,
+      marginBottom: spacing.xs,
+    },
+    restaurantName: {
+      fontSize: typography.sizes.medium,
+      fontWeight: typography.fontWeightMedium,
+      marginBottom: spacing.xs,
+    },
+    timePosted: {
+      fontSize: typography.sizes.small,
+      marginBottom: spacing.xs,
+    },
+    distance: {
+      fontSize: typography.sizes.small,
+    },
+    foodDescription: {
+      fontSize: typography.sizes.medium,
+      marginBottom: spacing.sm,
+    },
+    actionButtons: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    actionButton: {
+      flex: 1,
+      marginHorizontal: spacing.xs,
+    },
+    titleRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: spacing.xs,
+    },
 
-const getStyles = (isDarkMode: boolean) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
-  },
-  content: {
-    flex: 1,
-  },
-  section: {
-    padding: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: isDarkMode ? '#ffffff' : '#2c3e50',
-    marginBottom: 16,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: isDarkMode ? '#2c2c2c' : '#f8f9fa',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#27ae60',
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: isDarkMode ? '#bdc3c7' : '#7f8c8d',
-    textAlign: 'center',
-  },
-  actionButtons: {
-    gap: 12,
-  },
-  actionButton: {
-    marginBottom: 8,
-  },
-  requestCard: {
-    backgroundColor: isDarkMode ? '#2c2c2c' : '#f8f9fa',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  requestInfo: {
-    flex: 1,
-  },
-  requestItem: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: isDarkMode ? '#ffffff' : '#2c3e50',
-    marginBottom: 4,
-  },
-  requestQuantity: {
-    fontSize: 14,
-    color: isDarkMode ? '#bdc3c7' : '#7f8c8d',
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  statusText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-});
+    sideActions: {
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginLeft: spacing.sm,
+    },
+    requestButton: {
+      width: 40,
+      height: 40,
+      borderRadius: borderRadius.sm,
+      backgroundColor: colors.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: spacing.xs,
+      ...shadows,
+    },
+    requestEmoji: {
+      fontSize: 20,
+      color: colors.surface,
+    },
+    contactButton: {
+      width: 40,
+      height: 40,
+      borderRadius: borderRadius.sm,
+      backgroundColor: colors.secondary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      ...shadows,
+    },
+    contactEmoji: {
+      fontSize: 20,
+      color: colors.surface,
+    },
+    timerBox: {
+      width: 40,
+      height: 40,
+      borderRadius: borderRadius.sm,
+      backgroundColor: '#d9534f', // Bootstrap danger red
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: 4,
+      ...shadows,
+    },
+    timerText: {
+      color: colors.surface,
+      fontWeight: typography.fontWeightBold,
+      fontSize: typography.sizes.small,
+    },
+    requestedBadgeContainer: {
+      position: 'absolute',
+      bottom: 8,
+      right: 8,
+      backgroundColor: '#28a745',
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: borderRadius.sm,
+    },
+    requestedBadgeText: {
+      color: '#ffffff',
+      fontWeight: 'bold',
+      fontSize: typography.sizes.small,
+    },
+  });
