@@ -108,23 +108,32 @@ ShareBite/
 │   │   │   ├── LoginForm.tsx
 │   │   │   ├── RegisterForm.tsx
 │   │   │   └── RoleSelector.tsx
-│   │   ├── common/          # Common UI components
-│   │   │   ├── Button.tsx
-│   │   │   └── Header.tsx
-│   │   └── FoodCard.tsx     # Food item display component
+│   │   └── common/          # Common UI components
+│   │       ├── Button.tsx
+│   │       └── HeaderWithBurger.tsx
 │   ├── context/             # React Context providers
-│   │   └── AuthContext.tsx  # Authentication state management
+│   │   ├── AuthContext.tsx  # Authentication state management
+│   │   └── ThemeContext.tsx # Theme and dark mode management
 │   ├── navigation/          # App navigation logic
-│   │   └── AppNavigator.tsx
+│   │   └── ReactAppNavigator.tsx
 │   ├── screens/             # Screen components
 │   │   ├── auth/
 │   │   │   └── AuthScreen.tsx
 │   │   ├── restaurant/
-│   │   │   └── RestaurantDashboard.tsx
-│   │   ├── shelter/
-│   │   │   └── ShelterDashboard.tsx
-│   │   └── volunteer/
-│   │       └── VolunteerDashboard.tsx
+│   │   │   ├── RestaurantDashboard.tsx
+│   │   │   ├── ShareFood.tsx
+│   │   │   ├── RestaurantHistory.tsx
+│   │   │   ├── AccountSettings.tsx
+│   │   │   └── NearbyShelters.tsx
+│   │   └── shelter/
+│   │       ├── ShelterDashboard.tsx
+│   │       ├── ShelterImpact.tsx
+│   │       └── ShelterNearbyRestaurants.tsx
+│   ├── services/            # Business logic services
+│   │   ├── AuthService.ts
+│   │   └── ProfileService.ts
+│   ├── theme/               # App theming and styles
+│   │   └── index.ts
 │   └── types/               # TypeScript type definitions
 │       └── auth.ts
 ├── android/                 # Android-specific files
@@ -137,12 +146,14 @@ ShareBite/
 
 #### 🔐 Authentication System
 - **AuthContext**: Manages user authentication state using React Context
-- **Role-based routing**: Different interfaces for restaurants, shelters, and volunteers
-- **Persistent login**: Uses React Native's built-in storage (currently in-memory for demo)
+- **Role-based routing**: Different interfaces for restaurants and shelters
+- **Firebase integration**: Secure authentication and Firestore database
+- **Persistent login**: Uses Firebase auth state persistence
 
 #### 🎨 UI Components
-- **Reusable components**: Consistent Button, Header, and FoodCard components
-- **Dark mode support**: Automatically adapts to system theme preferences
+- **Reusable components**: Consistent Button and HeaderWithBurger components
+- **Theme system**: Centralized theme management with dark mode support
+- **React Navigation**: Standard navigation with proper TypeScript types
 - **Responsive design**: Works across different screen sizes
 
 #### 📱 Navigation

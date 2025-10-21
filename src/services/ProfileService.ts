@@ -37,16 +37,6 @@ export interface ShelterProfile extends BasicUserProfile {
   description?: string;
 }
 
-export interface VolunteerProfile extends BasicUserProfile {
-  role: 'volunteer';
-  address?: string;
-  city?: string;
-  state?: string;
-  zipCode?: string;
-  transportType?: 'car' | 'bike' | 'walking' | 'public_transport';
-  maxDistance?: number; // km willing to travel
-}
-
 export class ProfileService {
   private static COLLECTION = 'users';
 
@@ -108,27 +98,6 @@ export class ProfileService {
     }
   }
 
-  // Update user profile
-  static async updateUserProfile(
-    userId: string,
-    updates: Partial<BasicUserProfile>
-  ): Promise<void> {
-    try {
-      await firebaseFirestore
-        .collection(this.COLLECTION)
-        .doc(userId)
-        .update({
-          ...updates,
-          updatedAt: FirestoreTimestamp.now(),
-        });
-        
-      console.log('✅ Profile updated successfully');
-    } catch (error) {
-      console.error('❌ Failed to update user profile:', error);
-      throw new Error(`Failed to update user profile: ${error}`);
-    }
-  }
-
   // Get all restaurants
   static async getRestaurants(): Promise<RestaurantProfile[]> {
     try {
@@ -162,42 +131,6 @@ export class ProfileService {
     } catch (error) {
       console.error('❌ Failed to get shelters:', error);
       throw new Error(`Failed to get shelters: ${error}`);
-    }
-  }
-
-  // Get all volunteers
-  static async getVolunteers(): Promise<VolunteerProfile[]> {
-    try {
-      const snapshot = await firebaseFirestore
-        .collection(this.COLLECTION)
-        .where('role', '==', 'volunteer')
-        .where('isActive', '==', true)
-        .get();
-
-      const volunteers = snapshot.docs.map(doc => doc.data() as VolunteerProfile);
-      console.log(`✅ Found ${volunteers.length} volunteers`);
-      return volunteers;
-    } catch (error) {
-      console.error('❌ Failed to get volunteers:', error);
-      throw new Error(`Failed to get volunteers: ${error}`);
-    }
-  }
-
-  // Delete user profile (mark as inactive)
-  static async deleteUserProfile(userId: string): Promise<void> {
-    try {
-      await firebaseFirestore
-        .collection(this.COLLECTION)
-        .doc(userId)
-        .update({
-          isActive: false,
-          updatedAt: FirestoreTimestamp.now(),
-        });
-        
-      console.log('✅ Profile deactivated successfully');
-    } catch (error) {
-      console.error('❌ Failed to delete user profile:', error);
-      throw new Error(`Failed to delete user profile: ${error}`);
     }
   }
 }

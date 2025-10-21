@@ -5,16 +5,20 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native';
+import { useNavigation as useReactNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { HeaderWithBurger } from '../../components/common/HeaderWithBurger';
 import { Button } from '../../components/common/Button';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigation } from '../../context/NavigationContext';
 import { useTheme } from '../../context/ThemeContext';
+import { RootStackParamList } from '../../navigation/ReactAppNavigator';
+
+type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 export const RestaurantDashboard: React.FC = () => {
   const { isDarkMode, colors, typography, borderRadius, spacing, shadows } = useTheme();
   const { state } = useAuth();
-  const navigation = useNavigation();
+  const navigation = useReactNavigation<NavigationProp>();
   const styles = getStyles(isDarkMode, colors, typography, borderRadius, spacing, shadows);
 
   const currentItems = [

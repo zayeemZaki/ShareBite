@@ -1,5 +1,5 @@
 import { firebaseAuth } from '../config/firebase';
-import { User, UserRole, LoginCredentials, RegisterCredentials } from '../types/auth';
+import { User, LoginCredentials, RegisterCredentials } from '../types/auth';
 import { ProfileService } from './ProfileService';
 
 export class AuthService {

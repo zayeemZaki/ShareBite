@@ -4,15 +4,13 @@ import {
   Text,
   ScrollView,
   StyleSheet,
-  useColorScheme,
 } from 'react-native';
 import { HeaderWithBurger } from '../../components/common/HeaderWithBurger';
-import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 
 export const RestaurantHistory: React.FC = () => {
-  const isDarkMode = useColorScheme() === 'dark';
-  const { state } = useAuth();
-  const styles = getStyles(isDarkMode);
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
 
   const historyStats = [
     { label: 'Total Food Items Shared', value: '156' },
@@ -32,7 +30,6 @@ export const RestaurantHistory: React.FC = () => {
     <View style={styles.container}>
       <HeaderWithBurger
         title="Restaurant History"
-        isDarkMode={isDarkMode}
         currentScreen="RestaurantHistory"
       />
 
@@ -57,7 +54,7 @@ export const RestaurantHistory: React.FC = () => {
                 <Text style={styles.itemName}>{item.item}</Text>
                 <Text style={styles.itemDetails}>{item.quantity} • {item.date}</Text>
               </View>
-              <View style={[styles.statusBadge, { backgroundColor: '#27ae60' }]}>
+              <View style={[styles.statusBadge, { backgroundColor: colors.success }]}>
                 <Text style={styles.statusText}>{item.status}</Text>
               </View>
             </View>
@@ -68,10 +65,10 @@ export const RestaurantHistory: React.FC = () => {
   );
 };
 
-const getStyles = (isDarkMode: boolean) => StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
+    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
@@ -82,7 +79,7 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: isDarkMode ? '#ffffff' : '#2c3e50',
+    color: colors.textPrimary,
     marginBottom: 16,
   },
   statsContainer: {
@@ -94,7 +91,7 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
   statCard: {
     flex: 1,
     minWidth: '45%',
-    backgroundColor: isDarkMode ? '#2c2c2c' : '#f8f9fa',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -103,16 +100,16 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
   statValue: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#3498db',
+    color: colors.primary,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: isDarkMode ? '#bdc3c7' : '#7f8c8d',
+    color: colors.textSecondary,
     textAlign: 'center',
   },
   itemCard: {
-    backgroundColor: isDarkMode ? '#2c2c2c' : '#f8f9fa',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -126,12 +123,12 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
   itemName: {
     fontSize: 16,
     fontWeight: '600',
-    color: isDarkMode ? '#ffffff' : '#2c3e50',
+    color: colors.textPrimary,
     marginBottom: 4,
   },
   itemDetails: {
     fontSize: 14,
-    color: isDarkMode ? '#bdc3c7' : '#7f8c8d',
+    color: colors.textSecondary,
   },
   statusBadge: {
     paddingHorizontal: 12,

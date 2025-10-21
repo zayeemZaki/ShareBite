@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   StyleSheet,
-  useColorScheme,
   TouchableOpacity,
   Image,
   Alert,
@@ -27,9 +26,8 @@ interface FoodItem {
 }
 
 export const ShelterDashboard: React.FC = () => {
-  const isDarkMode = useColorScheme() === 'dark';
   const { state } = useAuth();
-  const { colors, typography, borderRadius, spacing, shadows } = useTheme();
+  const { colors, typography, borderRadius, spacing, shadows, isDarkMode } = useTheme();
   const styles = getStyles(isDarkMode, colors, typography, borderRadius, spacing, shadows);
 
   const [foodItems, setFoodItems] = useState<FoodItem[]>([]);

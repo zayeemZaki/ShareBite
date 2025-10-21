@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Modal,
   TextInput,
-  Platform,
   Alert,
   FlatList,
 } from 'react-native';

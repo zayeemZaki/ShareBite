@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { SafeAreaView, StatusBar, useColorScheme, StyleSheet } from 'react-native';
+import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
 import { LoginForm } from '../../components/auth/LoginForm';
 import { RegisterForm } from '../../components/auth/RegisterForm';
+import { useTheme } from '../../context/ThemeContext';
 
 export const AuthScreen: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const isDarkMode = useColorScheme() === 'dark';
+  const { colors, isDarkMode } = useTheme();
 
-  const styles = getStyles(isDarkMode);
+  const styles = getStyles(colors);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -27,9 +28,9 @@ export const AuthScreen: React.FC = () => {
   );
 };
 
-const getStyles = (isDarkMode: boolean) => StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
+    backgroundColor: colors.background,
   },
 });

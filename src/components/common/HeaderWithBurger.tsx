@@ -8,15 +8,18 @@ import {
   FlatList,
   Image,
 } from 'react-native';
-import { useNavigation } from '../../context/NavigationContext';
+import { useNavigation as useReactNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { ScreenName } from '../../types/navigation';
+import { RootStackParamList } from '../../navigation/ReactAppNavigator';
+
+type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 interface HeaderWithBurgerProps {
   title: string;
   isDarkMode?: boolean;
-  currentScreen?: ScreenName;
+  currentScreen?: keyof RootStackParamList;
   showLogo?: boolean;
 }
 
@@ -26,16 +29,16 @@ export const HeaderWithBurger: React.FC<HeaderWithBurgerProps> = ({
   showLogo = false,
 }) => {
   const [menuVisible, setMenuVisible] = useState(false);
-  const navigation = useNavigation();
+  const navigation = useReactNavigation<NavigationProp>();
   const { logout } = useAuth();
   const { isDarkMode, colors, typography, borderRadius, spacing, shadows } = useTheme();
   const styles = getStyles(isDarkMode, colors, typography, borderRadius, spacing, shadows);
 
   const { state } = useAuth();
   const userRole = state.user?.role;
-  const dashboardScreen = userRole === 'shelter' ? 'ShelterDashboard' : 'RestaurantDashboard';
+  const dashboardScreen: keyof RootStackParamList = userRole === 'shelter' ? 'ShelterDashboard' : 'RestaurantDashboard';
 
-  const menuItems: { id: string; title: string; screen?: ScreenName; action?: () => void; textColor?: string }[] = userRole === 'shelter' ? [
+  const menuItems: { id: string; title: string; screen?: keyof RootStackParamList; action?: () => void; textColor?: string }[] = userRole === 'shelter' ? [
     { id: '1', title: '🏠 Dashboard', screen: 'ShelterDashboard' },
     { id: '2', title: '📊 Impact', screen: 'ShelterImpact' },
     { id: '3', title: '🏪 Nearby Restaurants', screen: 'ShelterNearbyRestaurants' },
@@ -52,7 +55,6 @@ export const HeaderWithBurger: React.FC<HeaderWithBurgerProps> = ({
   const handleMenuItemPress = (item: typeof menuItems[0]) => {
     setMenuVisible(false);
     if (item.screen) {
-      // Remove debug alert for production
       navigation.navigate(item.screen);
     } else if (item.action) {
       item.action();

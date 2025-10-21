@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  useColorScheme,
 } from 'react-native';
 import { UserRole } from '../../types/auth';
+import { useTheme } from '../../context/ThemeContext';
 
 interface RoleSelectorProps {
   selectedRole: UserRole | null;
@@ -17,8 +17,8 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
   selectedRole,
   onRoleSelect,
 }) => {
-  const isDarkMode = useColorScheme() === 'dark';
-  const styles = getStyles(isDarkMode);
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
 
   const roles = [
     {
@@ -30,11 +30,6 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
       value: 'shelter' as UserRole,
       title: '🏠 Shelter',
       description: 'Request food for your shelter residents',
-    },
-    {
-      value: 'volunteer' as UserRole,
-      title: '🚗 Volunteer',
-      description: 'Help deliver food from restaurants to shelters',
     },
   ];
 
@@ -68,43 +63,43 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
   );
 };
 
-const getStyles = (isDarkMode: boolean) => StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     marginBottom: 24,
   },
   title: {
     fontSize: 18,
     fontWeight: '600',
-    color: isDarkMode ? '#ffffff' : '#2c3e50',
+    color: colors.textPrimary,
     marginBottom: 16,
     textAlign: 'center',
   },
   roleOption: {
     borderWidth: 2,
-    borderColor: isDarkMode ? '#444' : '#e0e0e0',
+    borderColor: colors.border,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    backgroundColor: isDarkMode ? '#2c2c2c' : '#f8f9fa',
+    backgroundColor: colors.surface,
   },
   selectedRole: {
-    borderColor: '#3498db',
-    backgroundColor: '#3498db10',
+    borderColor: colors.primary,
+    backgroundColor: colors.primary + '10',
   },
   roleTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: isDarkMode ? '#ffffff' : '#2c3e50',
+    color: colors.textPrimary,
     marginBottom: 4,
   },
   selectedRoleTitle: {
-    color: '#3498db',
+    color: colors.primary,
   },
   roleDescription: {
     fontSize: 14,
-    color: isDarkMode ? '#bdc3c7' : '#7f8c8d',
+    color: colors.textSecondary,
   },
   selectedRoleDescription: {
-    color: isDarkMode ? '#3498db' : '#2980b9',
+    color: colors.primary,
   },
 });

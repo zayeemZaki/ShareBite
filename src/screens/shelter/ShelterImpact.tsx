@@ -4,16 +4,12 @@ import {
   Text,
   ScrollView,
   StyleSheet,
-  useColorScheme,
 } from 'react-native';
 import { HeaderWithBurger } from '../../components/common/HeaderWithBurger';
-import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 
 export const ShelterImpact: React.FC = () => {
-  const isDarkMode = useColorScheme() === 'dark';
-  const { state } = useAuth();
-  const { colors, typography, borderRadius, spacing, shadows } = useTheme();
+  const { colors, typography, borderRadius, spacing, shadows, isDarkMode } = useTheme();
   const styles = getStyles(isDarkMode, colors, typography, borderRadius, spacing, shadows);
 
   const impactStats = [
