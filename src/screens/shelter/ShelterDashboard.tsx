@@ -5,25 +5,15 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  Image,
   Alert,
+  RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { HeaderWithBurger } from '../../components/common/HeaderWithBurger';
 import { Button } from '../../components/common/Button';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-
-interface FoodItem {
-  id: string;
-  title: string;
-  restaurantName: string;
-  restaurantPic: string;
-  timePosted: string;
-  distance: number;
-  description: string;
-  isRequested?: boolean;
-  timeLeft: number; // in minutes
-}
+import { FoodService, FoodItem, FoodItemRequest } from '../../services/FoodService';
 
 export const ShelterDashboard: React.FC = () => {
   const { state } = useAuth();
@@ -31,69 +21,137 @@ export const ShelterDashboard: React.FC = () => {
   const styles = getStyles(isDarkMode, colors, typography, borderRadius, spacing, shadows);
 
   const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
-  const [sortBy, setSortBy] = useState<'distance' | 'latest'>('distance');
+  const [requestedItems, setRequestedItems] = useState<(FoodItemRequest & { foodItem?: FoodItem })[]>([]);
+  const [historyItems, setHistoryItems] = useState<(FoodItemRequest & { foodItem?: FoodItem })[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [sortBy, setSortBy] = useState<'distance' | 'latest'>('latest');
+  const [activeTab, setActiveTab] = useState<'available' | 'requested' | 'history'>('available');
 
-  // Mock fetch function to simulate fetching food items from restaurants nearby
   useEffect(() => {
-    const fetchedItems: FoodItem[] = [
-      {
-        id: '1',
-        title: '🍕 Pizza Slices',
-        restaurantName: "Mario's Kitchen",
-        restaurantPic: 'https://example.com/marios-kitchen.jpg',
-        timePosted: '10 minutes ago',
-        distance: 0.3,
-        description: 'Fresh pizza slices available for pickup',
-        isRequested: false,
-        timeLeft: 45,
-      },
-      {
-        id: '2',
-        title: '🥗 Fresh Salad',
-        restaurantName: 'Green Garden',
-        restaurantPic: 'https://example.com/green-garden.jpg',
-        timePosted: '30 minutes ago',
-        distance: 0.5,
-        description: 'Organic mixed greens with dressing',
-        isRequested: true,
-        timeLeft: 30,
-      },
-      {
-        id: '3',
-        title: '🍞 Bread Loaves',
-        restaurantName: 'Baker\'s Delight',
-        restaurantPic: 'https://example.com/bakers-delight.jpg',
-        timePosted: '5 minutes ago',
-        distance: 0.2,
-        description: 'Freshly baked bread loaves',
-        isRequested: false,
-        timeLeft: 60,
-      },
-    ];
-    setFoodItems(fetchedItems);
-  }, []);
+    loadData();
+  }, [state.user?.id, activeTab]);
 
-  const sortedFoodItems = [...foodItems].sort((a, b) => {
-    if (sortBy === 'distance') {
-      return a.distance - b.distance;
-    } else {
-      // Assuming timePosted is a string like '10 minutes ago', parse to minutes
-      const parseTime = (timeStr: string) => {
-        const match = timeStr.match(/(\d+)\s+minutes?/);
-        return match ? parseInt(match[1], 10) : 0;
-      };
-      return parseTime(a.timePosted) - parseTime(b.timePosted);
+  const loadData = async () => {
+    if (activeTab === 'available') {
+      loadAvailableFoodItems();
+    } else if (activeTab === 'requested') {
+      loadRequestedItems();
+    } else if (activeTab === 'history') {
+      loadHistoryItems();
     }
-  });
-
-  const handleRequestPickup = (itemId: string) => {
-    // Implement request pickup logic here
-    Alert.alert('Pickup Requested', `Pickup requested for item ${itemId}`);
   };
 
-  const handleContactRestaurant = (restaurantName: string) => {
+  const loadAvailableFoodItems = async () => {
+    if (!state.user) return;
+    
+    try {
+      setLoading(true);
+      const items = await FoodService.getAvailableFoodItemsForShelter(state.user.id);
+      setFoodItems(items);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to load available food items');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadRequestedItems = async () => {
+    try {
+      setLoading(true);
+      if (state.user?.id) {
+        const requests = await FoodService.getShelterRequestsWithFoodDetails(state.user.id);
+        // Filter out picked up items for the requested tab
+        const activeRequests = requests.filter(req => req.status !== 'picked_up');
+        setRequestedItems(activeRequests);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to load requested items');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const loadHistoryItems = async () => {
+    try {
+      setLoading(true);
+      if (state.user?.id) {
+        const requests = await FoodService.getShelterRequestsWithFoodDetails(state.user.id);
+        // Filter only picked up items for the history tab
+        const pickedUpRequests = requests.filter(req => req.status === 'picked_up');
+        setHistoryItems(pickedUpRequests);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to load history items');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadData();
+  };
+
+  const handleRequestFood = async (item: FoodItem) => {
+    Alert.alert(
+      'Request Food',
+      `Do you want to request "${item.title}" from ${item.restaurantName}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Request',
+          onPress: async () => {
+            try {
+              if (state.user?.id && state.user?.name) {
+                await FoodService.requestFoodItem(item.id, state.user.id, state.user.name);
+                Alert.alert('Success', 'Food item requested successfully!');
+                loadAvailableFoodItems(); // Refresh the list
+              }
+            } catch (error) {
+              Alert.alert('Error', error instanceof Error ? error.message : 'Failed to request food item');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'requested': return '#f39c12'; // Orange
+      case 'approved': return '#27ae60';  // Green
+      case 'declined': return '#e74c3c';  // Red
+      case 'picked_up': return '#3498db'; // Blue
+      default: return '#95a5a6';          // Gray
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'requested': return 'Requested';
+      case 'approved': return 'Approved';
+      case 'declined': return 'Declined';
+      case 'picked_up': return 'Picked Up';
+      default: return 'Unknown';
+    }
+  };
+
+  const sortedFoodItems = [...foodItems].sort((a, b) => {
+    if (sortBy === 'latest') {
+      // Sort by creation time (newest first)
+      if (a.createdAt && b.createdAt) {
+        return b.createdAt.seconds - a.createdAt.seconds;
+      }
+    }
+    return 0;
+  });
+
+  const handleContactRestaurant = (restaurantId: string) => {
     // Implement contact restaurant logic here
-    Alert.alert('Contact Restaurant', `Contacting ${restaurantName}`);
+    Alert.alert('Contact Restaurant', `Contacting restaurant (ID: ${restaurantId})`);
   };
 
   return (
@@ -104,59 +162,203 @@ export const ShelterDashboard: React.FC = () => {
         showLogo={true}
       />
 
-      <View style={styles.sortContainer}>
-        <Text style={styles.sortLabel}>Sort by:</Text>
-        <View style={styles.sortButtons}>
-          <Button
-            title="Distance"
-            onPress={() => setSortBy('distance')}
-            variant={sortBy === 'distance' ? 'primary' : 'secondary'}
-            style={styles.sortButton}
-          />
-          <Button
-            title="Latest"
-            onPress={() => setSortBy('latest')}
-            variant={sortBy === 'latest' ? 'primary' : 'secondary'}
-            style={styles.sortButton}
-          />
-        </View>
+      <View style={styles.tabContainer}>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'available' && styles.activeTab]}
+          onPress={() => setActiveTab('available')}
+        >
+          <Text style={[styles.tabText, activeTab === 'available' && styles.activeTabText]}>
+            Available
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'requested' && styles.activeTab]}
+          onPress={() => setActiveTab('requested')}
+        >
+          <Text style={[styles.tabText, activeTab === 'requested' && styles.activeTabText]}>
+            Requests
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'history' && styles.activeTab]}
+          onPress={() => setActiveTab('history')}
+        >
+          <Text style={[styles.tabText, activeTab === 'history' && styles.activeTabText]}>
+            History
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content}>
-        {sortedFoodItems.map((item) => (
-          <View key={item.id} style={[styles.foodCard, { backgroundColor: colors.surface }]}>
-            <View style={styles.foodCardHeader}>
-              <Image source={{ uri: item.restaurantPic }} style={styles.restaurantPic} />
-              <View style={styles.foodInfo}>
-                <View style={styles.titleRow}>
-                  <Text style={[styles.foodTitle, { color: isDarkMode ? '#ffffff' : colors.textPrimary }]}>{item.title}</Text>
-                </View>
-                <Text style={[styles.restaurantName, { color: isDarkMode ? '#cccccc' : colors.textSecondary }]}>{item.restaurantName}</Text>
-                <Text style={[styles.timePosted, { color: isDarkMode ? '#cccccc' : colors.textSecondary }]}>{item.timePosted}</Text>
-                <Text style={[styles.distance, { color: isDarkMode ? '#cccccc' : colors.textSecondary }]}>{item.distance} miles away</Text>
-              </View>
-              <View style={styles.sideActions}>
-                {!item.isRequested && (
-                  <TouchableOpacity style={styles.requestButton} onPress={() => handleRequestPickup(item.id)}>
-                    <Text style={styles.requestEmoji}>➕</Text>
-                  </TouchableOpacity>
-                )}
-                <TouchableOpacity style={styles.contactButton} onPress={() => handleContactRestaurant(item.restaurantName)}>
-                  <Text style={styles.contactEmoji}>💬</Text>
-                </TouchableOpacity>
-                <View style={styles.timerBox}>
-                  <Text style={styles.timerText}>{item.timeLeft} min</Text>
-                </View>
-              </View>
-            </View>
-            <Text style={[styles.foodDescription, { color: isDarkMode ? '#cccccc' : colors.textSecondary }]}>{item.description}</Text>
-            {item.isRequested && (
-              <View style={styles.requestedBadgeContainer}>
-                <Text style={styles.requestedBadgeText}>REQUESTED</Text>
-              </View>
-            )}
+      {activeTab === 'available' && (
+        <View style={styles.sortContainer}>
+          <Text style={styles.sortLabel}>Sort by:</Text>
+          <View style={styles.sortButtons}>
+            <Button
+              title="Distance"
+              onPress={() => setSortBy('distance')}
+              variant={sortBy === 'distance' ? 'primary' : 'secondary'}
+              style={styles.sortButton}
+            />
+            <Button
+              title="Latest"
+              onPress={() => setSortBy('latest')}
+              variant={sortBy === 'latest' ? 'primary' : 'secondary'}
+              style={styles.sortButton}
+            />
           </View>
-        ))}
+        </View>
+      )}
+
+      <ScrollView style={styles.content} refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }>
+        {activeTab === 'available' ? (
+          // Available Food Items
+          sortedFoodItems.map((item) => (
+            <View key={item.id} style={[styles.foodCard, { backgroundColor: colors.surface }]}>
+              <View style={styles.foodCardHeader}>
+                <View style={styles.foodInfo}>
+                  <View style={styles.titleRow}>
+                    <Text style={[styles.foodTitle, { color: isDarkMode ? '#ffffff' : colors.textPrimary }]}>{item.title}</Text>
+                  </View>
+                  <Text style={[styles.restaurantName, { color: isDarkMode ? '#cccccc' : colors.textSecondary }]}>Restaurant: {item.restaurantName}</Text>
+                  <Text style={[styles.timePosted, { color: isDarkMode ? '#cccccc' : colors.textSecondary }]}>
+                    Posted: {item.createdAt ? new Date(item.createdAt.seconds * 1000).toLocaleTimeString() : 'Recently'}
+                  </Text>
+                  <Text style={[styles.timePosted, { color: isDarkMode ? '#cccccc' : colors.textSecondary }]}>Quantity: {item.quantity}</Text>
+                </View>
+                <View style={styles.sideActions}>
+                  {item.isAvailable && (
+                    <TouchableOpacity style={styles.requestButton} onPress={() => handleRequestFood(item)}>
+                      <Text style={styles.requestEmoji}>➕</Text>
+                    </TouchableOpacity>
+                  )}
+                  <TouchableOpacity style={styles.contactButton} onPress={() => handleContactRestaurant(item.restaurantId)}>
+                    <Text style={styles.contactEmoji}>💬</Text>
+                  </TouchableOpacity>
+                  {item.expiryTime && (
+                    <View style={styles.timerBox}>
+                      <Text style={styles.timerText}>
+                        Expires: {new Date(item.expiryTime.seconds * 1000).toLocaleTimeString()}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+              <Text style={[styles.foodDescription, { color: isDarkMode ? '#cccccc' : colors.textSecondary }]}>{item.description}</Text>
+            </View>
+          ))
+        ) : activeTab === 'requested' ? (
+          // Requested Items (excluding picked up)
+          loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text style={styles.loadingText}>Loading your requests...</Text>
+            </View>
+          ) : requestedItems.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>No active requests</Text>
+              <Text style={styles.emptySubtext}>Request some food items to see them here!</Text>
+            </View>
+          ) : (
+            requestedItems.map((request) => (
+              <View key={request.id} style={[styles.foodCard, { backgroundColor: colors.surface }]}>
+                <View style={styles.foodCardHeader}>
+                  <View style={styles.foodInfo}>
+                    <View style={styles.titleRow}>
+                      <Text style={[styles.foodTitle, { color: isDarkMode ? '#ffffff' : colors.textPrimary }]}>
+                        {request.foodItem?.title || 'Unknown Item'}
+                      </Text>
+                      <View style={[styles.statusBadge, { backgroundColor: getStatusColor(request.status) }]}>
+                        <Text style={styles.statusText}>{getStatusText(request.status)}</Text>
+                      </View>
+                    </View>
+                    <Text style={[styles.restaurantName, { color: isDarkMode ? '#cccccc' : colors.textSecondary }]}>
+                      Restaurant: {request.foodItem?.restaurantName || 'Unknown'}
+                    </Text>
+                    <Text style={[styles.timePosted, { color: isDarkMode ? '#cccccc' : colors.textSecondary }]}>
+                      Requested: {request.requestedAt ? new Date(request.requestedAt.seconds * 1000).toLocaleString() : 'Recently'}
+                    </Text>
+                    {request.reviewedAt && (
+                      <Text style={[styles.timePosted, { color: isDarkMode ? '#cccccc' : colors.textSecondary }]}>
+                        Reviewed: {new Date(request.reviewedAt.seconds * 1000).toLocaleString()}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+                <Text style={[styles.foodDescription, { color: isDarkMode ? '#cccccc' : colors.textSecondary }]}>
+                  {request.foodItem?.description || 'No description available'}
+                </Text>
+                {request.status === 'approved' && request.foodItem && (
+                  <View style={styles.pickupInfo}>
+                    <Text style={styles.pickupTitle}>📍 Pickup Information:</Text>
+                    <Text style={styles.pickupText}>Address: {request.foodItem.restaurantAddress}</Text>
+                    {request.foodItem.restaurantPhone && (
+                      <Text style={styles.pickupText}>Phone: {request.foodItem.restaurantPhone}</Text>
+                    )}
+                    {request.foodItem.pickupInstructions && (
+                      <Text style={styles.pickupText}>Instructions: {request.foodItem.pickupInstructions}</Text>
+                    )}
+                  </View>
+                )}
+              </View>
+            ))
+          )
+        ) : (
+          // History Items (picked up)
+          loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text style={styles.loadingText}>Loading history...</Text>
+            </View>
+          ) : historyItems.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>No history yet</Text>
+              <Text style={styles.emptySubtext}>Completed pickups will appear here!</Text>
+            </View>
+          ) : (
+            historyItems.map((request) => (
+              <View key={request.id} style={[styles.foodCard, { backgroundColor: colors.surface }]}>
+                <View style={styles.foodCardHeader}>
+                  <View style={styles.foodInfo}>
+                    <View style={styles.titleRow}>
+                      <Text style={[styles.foodTitle, { color: isDarkMode ? '#ffffff' : colors.textPrimary }]}>
+                        {request.foodItem?.title || 'Unknown Item'}
+                      </Text>
+                      <View style={[styles.statusBadge, { backgroundColor: getStatusColor(request.status) }]}>
+                        <Text style={styles.statusText}>✅ {getStatusText(request.status)}</Text>
+                      </View>
+                    </View>
+                    <Text style={[styles.restaurantName, { color: isDarkMode ? '#cccccc' : colors.textSecondary }]}>
+                      Restaurant: {request.foodItem?.restaurantName || 'Unknown'}
+                    </Text>
+                    <Text style={[styles.timePosted, { color: isDarkMode ? '#cccccc' : colors.textSecondary }]}>
+                      Requested: {request.requestedAt ? new Date(request.requestedAt.seconds * 1000).toLocaleDateString() : 'Recently'}
+                    </Text>
+                    {request.reviewedAt && (
+                      <Text style={[styles.timePosted, { color: isDarkMode ? '#cccccc' : colors.textSecondary }]}>
+                        Approved: {new Date(request.reviewedAt.seconds * 1000).toLocaleDateString()}
+                      </Text>
+                    )}
+                    {request.pickedUpAt && (
+                      <Text style={[styles.timePosted, { color: isDarkMode ? '#cccccc' : colors.textSecondary }]}>
+                        Picked Up: {new Date(request.pickedUpAt.seconds * 1000).toLocaleDateString()}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+                <Text style={[styles.foodDescription, { color: isDarkMode ? '#cccccc' : colors.textSecondary }]}>
+                  {request.foodItem?.description || 'No description available'}
+                </Text>
+                <View style={styles.historyInfo}>
+                  <Text style={styles.historyTitle}>📋 Pickup Summary:</Text>
+                  <Text style={styles.historyText}>✅ Successfully picked up from {request.foodItem?.restaurantName || 'Unknown'}</Text>
+                  <Text style={styles.historyText}>📅 Completed on {request.pickedUpAt ? new Date(request.pickedUpAt.seconds * 1000).toLocaleDateString() : 'Unknown date'}</Text>
+                </View>
+              </View>
+            ))
+          )
+        )}
       </ScrollView>
     </View>
   );
@@ -250,7 +452,6 @@ const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadi
       alignItems: 'center',
       marginBottom: spacing.xs,
     },
-
     sideActions: {
       flexDirection: 'column',
       alignItems: 'center',
@@ -312,5 +513,110 @@ const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadi
       color: '#ffffff',
       fontWeight: 'bold',
       fontSize: typography.sizes.small,
+    },
+    tabContainer: {
+      flexDirection: 'row',
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.md,
+      margin: spacing.md,
+      overflow: 'hidden',
+      ...shadows,
+    },
+    tab: {
+      flex: 1,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.lg,
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+    },
+    activeTab: {
+      backgroundColor: colors.primary,
+    },
+    tabText: {
+      fontSize: typography.sizes.medium,
+      fontWeight: typography.fontWeightMedium,
+      color: colors.textSecondary,
+    },
+    activeTabText: {
+      color: colors.surface,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: spacing.xl,
+    },
+    loadingText: {
+      marginTop: spacing.md,
+      fontSize: typography.sizes.medium,
+      color: colors.textSecondary,
+    },
+    emptyState: {
+      padding: spacing.xl,
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.md,
+      borderWidth: 2,
+      borderColor: colors.border,
+      borderStyle: 'dashed',
+      margin: spacing.md,
+    },
+    emptyText: {
+      fontSize: typography.sizes.large,
+      fontWeight: typography.fontWeightMedium,
+      color: colors.textPrimary,
+      marginBottom: spacing.sm,
+    },
+    emptySubtext: {
+      fontSize: typography.sizes.medium,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+    statusBadge: {
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+      borderRadius: borderRadius.lg,
+      marginLeft: spacing.sm,
+    },
+    statusText: {
+      color: colors.surface,
+      fontSize: typography.sizes.small,
+      fontWeight: typography.fontWeightMedium,
+    },
+    pickupInfo: {
+      backgroundColor: isDarkMode ? '#2c3e50' : '#ecf0f1',
+      borderRadius: borderRadius.md,
+      padding: spacing.md,
+      marginTop: spacing.sm,
+    },
+    pickupTitle: {
+      fontSize: typography.sizes.medium,
+      fontWeight: typography.fontWeightMedium,
+      color: colors.textPrimary,
+      marginBottom: spacing.xs,
+    },
+    pickupText: {
+      fontSize: typography.sizes.regular,
+      color: colors.textSecondary,
+      marginBottom: spacing.xs,
+    },
+    historyInfo: {
+      backgroundColor: isDarkMode ? '#1e3a28' : '#e8f5e8',
+      borderRadius: borderRadius.md,
+      padding: spacing.md,
+      marginTop: spacing.sm,
+      borderLeftWidth: 4,
+      borderLeftColor: '#27ae60',
+    },
+    historyTitle: {
+      fontSize: typography.sizes.medium,
+      fontWeight: typography.fontWeightMedium,
+      color: colors.textPrimary,
+      marginBottom: spacing.xs,
+    },
+    historyText: {
+      fontSize: typography.sizes.regular,
+      color: colors.textSecondary,
+      marginBottom: spacing.xs,
     },
   });

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,72 +7,77 @@ import {
   TouchableOpacity,
   Linking,
   TextInput,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { HeaderWithBurger } from '../../components/common/HeaderWithBurger';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
+import { ProfileService, RestaurantProfile } from '../../services/ProfileService';
 
 export const ShelterNearbyRestaurants: React.FC = () => {
   const { isDarkMode, colors, typography, borderRadius, spacing, shadows } = useTheme();
+  const { state: authState } = useAuth();
   const styles = getStyles(isDarkMode, colors, typography, borderRadius, spacing, shadows);
 
   const [city, setCity] = useState('');
-  const [state, setState] = useState('');
+  const [stateValue, setStateValue] = useState('');
   const [range, setRange] = useState('5'); // default 5 miles
+  const [restaurants, setRestaurants] = useState<RestaurantProfile[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchPerformed, setSearchPerformed] = useState(false);
 
-  const restaurants = [
-    {
-      id: '1',
-      name: "Mario's Kitchen",
-      address: '123 Main St, Downtown',
-      contact: '+1 (555) 123-4567',
-      distance: 0.5,
-      cuisine: 'Italian',
-      city: 'Downtown',
-      state: 'CA',
-    },
-    {
-      id: '2',
-      name: 'Green Garden',
-      address: '456 Oak Ave, Midtown',
-      contact: '+1 (555) 234-5678',
-      distance: 1.2,
-      cuisine: 'Healthy',
-      city: 'Midtown',
-      state: 'CA',
-    },
-    {
-      id: '3',
-      name: "Baker's Delight",
-      address: '789 Pine Rd, Uptown',
-      contact: '+1 (555) 345-6789',
-      distance: 2.1,
-      cuisine: 'Bakery',
-      city: 'Uptown',
-      state: 'CA',
-    },
-    {
-      id: '4',
-      name: 'Food Share Network',
-      address: '321 Elm St, Riverside',
-      contact: '+1 (555) 456-7890',
-      distance: 3.0,
-      cuisine: 'Various',
-      city: 'Riverside',
-      state: 'CA',
-    },
-  ];
+  // Load all restaurants initially
+  useEffect(() => {
+    loadAllRestaurants();
+  }, []);
+
+  const loadAllRestaurants = async () => {
+    try {
+      setLoading(true);
+      const allRestaurants = await ProfileService.getRestaurants();
+      setRestaurants(allRestaurants);
+      setSearchPerformed(true);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to load restaurants');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const searchRestaurants = async () => {
+    if (!city.trim() && !stateValue.trim()) {
+      Alert.alert('Search Required', 'Please enter a city or state to search');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      // For now, we'll get all restaurants and filter by city/state
+      // In a real app, you'd implement geocoding to get coordinates
+      const allRestaurants = await ProfileService.getRestaurants();
+      
+      const filtered = allRestaurants.filter(restaurant => {
+        const cityMatch = city.trim() === '' || 
+          (restaurant.city && restaurant.city.toLowerCase().includes(city.trim().toLowerCase()));
+        const stateMatch = stateValue.trim() === '' || 
+          (restaurant.state && restaurant.state.toLowerCase().includes(stateValue.trim().toLowerCase()));
+        
+        return cityMatch && stateMatch;
+      });
+
+      setRestaurants(filtered);
+      setSearchPerformed(true);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to search restaurants');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCall = (phoneNumber: string) => {
     Linking.openURL(`tel:${phoneNumber}`);
   };
-
-  const filteredRestaurants = restaurants.filter(restaurant => {
-    const cityMatch = city.trim() === '' || restaurant.city.toLowerCase().includes(city.trim().toLowerCase());
-    const stateMatch = state.trim() === '' || restaurant.state.toLowerCase().includes(state.trim().toLowerCase());
-    const rangeNum = Number(range);
-    const rangeMatch = isNaN(rangeNum) || restaurant.distance <= rangeNum;
-    return cityMatch && stateMatch && rangeMatch;
-  });
 
   return (
     <View style={styles.container}>
@@ -92,8 +97,8 @@ export const ShelterNearbyRestaurants: React.FC = () => {
         <TextInput
           style={styles.input}
           placeholder="State"
-          value={state}
-          onChangeText={setState}
+          value={stateValue}
+          onChangeText={setStateValue}
           placeholderTextColor={colors.textSecondary}
         />
         <TextInput
@@ -104,29 +109,58 @@ export const ShelterNearbyRestaurants: React.FC = () => {
           keyboardType="numeric"
           placeholderTextColor={colors.textSecondary}
         />
+        <TouchableOpacity style={styles.searchButton} onPress={searchRestaurants}>
+          <Text style={styles.searchButtonText}>
+            {loading ? 'Searching...' : 'Search'}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content}>
-        {filteredRestaurants.map((restaurant) => (
-          <View key={restaurant.id} style={styles.restaurantCard}>
-            <View style={styles.restaurantHeader}>
-              <View style={styles.restaurantInfo}>
-                <Text style={styles.restaurantName}>{restaurant.name}</Text>
-                <Text style={styles.restaurantAddress}>{restaurant.address}</Text>
-                <Text style={styles.cuisineText}>{restaurant.cuisine}</Text>
-              </View>
-              <View style={styles.distanceBadge}>
-                <Text style={styles.distanceText}>{restaurant.distance} mi</Text>
-              </View>
-            </View>
-            <TouchableOpacity
-              style={styles.callButton}
-              onPress={() => handleCall(restaurant.contact)}
-            >
-              <Text style={styles.callButtonText}>Call Restaurant</Text>
-            </TouchableOpacity>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={styles.loadingText}>Loading restaurants...</Text>
           </View>
-        ))}
+        ) : !searchPerformed ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>Use the search above to find restaurants</Text>
+          </View>
+        ) : restaurants.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>No restaurants found in your search area</Text>
+          </View>
+        ) : (
+          restaurants.map((restaurant) => (
+            <View key={restaurant.id} style={styles.restaurantCard}>
+              <View style={styles.restaurantHeader}>
+                <View style={styles.restaurantInfo}>
+                  <Text style={styles.restaurantName}>
+                    {restaurant.restaurantName || restaurant.name}
+                  </Text>
+                  <Text style={styles.restaurantAddress}>
+                    {restaurant.address && restaurant.city ? 
+                      `${restaurant.address}, ${restaurant.city}` : 
+                      restaurant.address || 'Address not provided'
+                    }
+                  </Text>
+                  <Text style={styles.phoneText}>
+                    {restaurant.phone || 'Phone not provided'}
+                  </Text>
+                </View>
+              </View>
+              
+              {restaurant.phone && (
+                <TouchableOpacity
+                  style={styles.callButton}
+                  onPress={() => handleCall(restaurant.phone!)}
+                >
+                  <Text style={styles.callButtonText}>📞 Call Restaurant</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -146,6 +180,42 @@ const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadi
       flexDirection: 'row',
       padding: spacing.md,
       gap: spacing.sm,
+    },
+    searchButton: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      borderRadius: borderRadius.sm,
+      justifyContent: 'center',
+      minWidth: 80,
+    },
+    searchButtonText: {
+      color: colors.surface,
+      fontSize: typography.sizes.medium,
+      fontWeight: typography.fontWeightMedium,
+      textAlign: 'center',
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: spacing.xl,
+    },
+    loadingText: {
+      marginTop: spacing.md,
+      fontSize: typography.sizes.medium,
+      color: colors.textSecondary,
+    },
+    emptyState: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: spacing.xl,
+    },
+    emptyText: {
+      fontSize: typography.sizes.medium,
+      color: colors.textSecondary,
+      textAlign: 'center',
     },
     input: {
       flex: 1,
@@ -180,6 +250,11 @@ const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadi
       marginBottom: spacing.xs,
     },
     restaurantAddress: {
+      fontSize: typography.sizes.regular,
+      color: colors.textSecondary,
+      marginBottom: spacing.xs,
+    },
+    phoneText: {
       fontSize: typography.sizes.regular,
       color: colors.textSecondary,
       marginBottom: spacing.xs,

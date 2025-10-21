@@ -13,50 +13,66 @@ import {
 import { HeaderWithBurger } from '../../components/common/HeaderWithBurger';
 import { Button } from '../../components/common/Button';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
+import { FoodService, FoodItemRequest } from '../../services/FoodService';
+import { ProfileService } from '../../services/ProfileService';
 
 type FoodType = 'Vegan' | 'Vegetarian' | 'Non Veg';
 type AllergenType = 'Gluten' | 'Nuts' | 'Dairy' | 'Soy' | 'Eggs' | 'Fish';
 
 interface FoodItemInput {
-  name: string;
-  type: FoodType;
+  title: string;
+  description: string;
+  quantity: string;
+  expiryHours: number;
+  isVegetarian: boolean;
+  isVegan: boolean;
   allergens: AllergenType[];
-  pickupStart: Date;
-  pickupEnd: Date;
-  quantity: number;
-  isHalal: boolean;
+  pickupInstructions: string;
+  imageUrl?: string;
 }
 
 export const ShareFood: React.FC<{ navigation?: any }> = ({ navigation }) => {
   const { isDarkMode, colors, typography, borderRadius, spacing, shadows } = useTheme();
+  const { state } = useAuth();
   const styles = getStyles(isDarkMode, colors, typography, borderRadius, spacing, shadows);
   const [foodItems, setFoodItems] = useState<FoodItemInput[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [newFood, setNewFood] = useState<FoodItemInput>({
-    name: '',
-    type: 'Vegan',
+    title: '',
+    description: '',
+    quantity: '1',
+    expiryHours: 24,
+    isVegetarian: false,
+    isVegan: false,
     allergens: [],
-    pickupStart: new Date(),
-    pickupEnd: new Date(),
-    quantity: 1,
-    isHalal: false,
+    pickupInstructions: '',
+    imageUrl: undefined,
   });
 
   const handleAddFood = () => {
-    if (!newFood.name || newFood.quantity <= 0) {
-      Alert.alert('Error', 'Please fill in all required fields');
+    if (!newFood.title?.trim() || !newFood.description?.trim() || !newFood.quantity?.trim()) {
+      Alert.alert('Error', 'Please fill in all required fields (title, description, and quantity)');
       return;
     }
 
-    setFoodItems([...foodItems, newFood]);
+    if (parseInt(newFood.quantity) <= 0) {
+      Alert.alert('Error', 'Quantity must be greater than 0');
+      return;
+    }
+
+    setFoodItems([...foodItems, { ...newFood }]);
     setNewFood({
-      name: '',
-      type: 'Vegan',
+      title: '',
+      description: '',
+      quantity: '1',
+      expiryHours: 24,
+      isVegetarian: false,
+      isVegan: false,
       allergens: [],
-      pickupStart: new Date(),
-      pickupEnd: new Date(),
-      quantity: 1,
-      isHalal: false,
+      pickupInstructions: '',
+      imageUrl: undefined,
     });
     setModalVisible(false);
     Alert.alert('Success', 'Food item added successfully!');
@@ -71,48 +87,59 @@ export const ShareFood: React.FC<{ navigation?: any }> = ({ navigation }) => {
     }));
   };
 
-  const handleTypeSelect = (type: FoodType) => {
-    setNewFood((prev) => ({
-      ...prev,
-      type,
+  const handleVegetarianToggle = () => {
+    setNewFood(prev => ({ 
+      ...prev, 
+      isVegetarian: !prev.isVegetarian,
+      isVegan: prev.isVegetarian ? false : prev.isVegan // If turning off vegetarian, also turn off vegan
     }));
   };
 
-  const handleSetStartTime = () => {
-    const newStart = new Date();
-    newStart.setHours(newStart.getHours() + 1);
-    setNewFood(prev => ({ ...prev, pickupStart: newStart }));
+  const handleVeganToggle = () => {
+    setNewFood(prev => ({ 
+      ...prev, 
+      isVegan: !prev.isVegan,
+      isVegetarian: prev.isVegan ? prev.isVegetarian : true // If turning on vegan, also turn on vegetarian
+    }));
   };
 
-  const handleSetEndTime = () => {
-    const newEnd = new Date();
-    newEnd.setHours(newEnd.getHours() + 3);
-    setNewFood(prev => ({ ...prev, pickupEnd: newEnd }));
-  };
-
-  const handlePublish = () => {
+  const handlePublish = async () => {
     if (foodItems.length === 0) {
       Alert.alert('Error', 'Please add at least one food item before publishing');
       return;
     }
 
-    Alert.alert(
-      'Publish Food Items',
-      `Are you sure you want to publish ${foodItems.length} food item(s)?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Publish',
-          onPress: () => {
-            // TODO: Replace with actual API integration
-            console.log('Publishing food items:', foodItems);
-            Alert.alert('Success', 'Food items published successfully!');
-            setFoodItems([]);
-            if (navigation) navigation.goBack();
-          },
-        },
-      ]
-    );
+    if (!state.user) {
+      Alert.alert('Error', 'User not authenticated');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Get restaurant profile for additional details
+      const restaurantProfile = await ProfileService.getUserProfile(state.user.id);
+      
+      if (!restaurantProfile) {
+        Alert.alert('Error', 'Restaurant profile not found. Please update your profile first.');
+        return;
+      }
+      
+      
+      // Create all food items
+      const promises = foodItems.map((item, index) => {
+        return FoodService.createFoodItem(state.user!.id, restaurantProfile, item);
+      });
+      
+      await Promise.all(promises);
+      
+      Alert.alert('Success', `${foodItems.length} food item(s) published successfully!`);
+      setFoodItems([]);
+      if (navigation) navigation.goBack();
+    } catch (error) {
+      Alert.alert('Error', 'Failed to publish food items. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRemoveFood = (index: number) => {
@@ -123,7 +150,7 @@ export const ShareFood: React.FC<{ navigation?: any }> = ({ navigation }) => {
   const renderFoodItem = ({ item, index }: { item: FoodItemInput; index: number }) => (
     <View style={styles.foodItemCard}>
       <View style={styles.foodItemHeader}>
-        <Text style={styles.foodItemName}>{item.name}</Text>
+        <Text style={styles.foodItemName}>{item.title}</Text>
         <TouchableOpacity
           onPress={() => handleRemoveFood(index)}
           style={styles.removeButton}
@@ -132,9 +159,12 @@ export const ShareFood: React.FC<{ navigation?: any }> = ({ navigation }) => {
         </TouchableOpacity>
       </View>
       <View style={styles.foodItemDetails}>
-        <Text style={styles.foodItemType}>{item.type}</Text>
+        <Text style={styles.foodItemType}>
+          {item.isVegan ? 'Vegan' : item.isVegetarian ? 'Vegetarian' : 'Non-Vegetarian'}
+        </Text>
         <Text style={styles.foodItemQuantity}>Qty: {item.quantity}</Text>
       </View>
+      <Text style={styles.foodItemDescription}>{item.description}</Text>
       {item.allergens.length > 0 && (
         <View style={styles.allergensContainer}>
           <Text style={styles.allergensLabel}>Allergens: </Text>
@@ -143,8 +173,13 @@ export const ShareFood: React.FC<{ navigation?: any }> = ({ navigation }) => {
       )}
       <View style={styles.timeContainer}>
         <Text style={styles.timeText}>
-          Pickup: {item.pickupStart.toLocaleString()} - {item.pickupEnd.toLocaleString()}
+          Expires in: {item.expiryHours} hours
         </Text>
+        {item.pickupInstructions && (
+          <Text style={styles.timeText}>
+            Pickup: {item.pickupInstructions}
+          </Text>
+        )}
       </View>
     </View>
   );
@@ -160,31 +195,51 @@ export const ShareFood: React.FC<{ navigation?: any }> = ({ navigation }) => {
           <ScrollView showsVerticalScrollIndicator={false}>
             <Text style={styles.modalTitle}>Add New Food Item</Text>
             
-            <Text style={styles.label}>Menu Item Name *</Text>
+            <Text style={styles.label}>Food Item Name *</Text>
             <TextInput
               placeholder="e.g., Grilled Chicken Sandwich"
               style={styles.input}
-              value={newFood.name}
-              onChangeText={name => setNewFood(prev => ({ ...prev, name }))}
+              value={newFood.title}
+              onChangeText={title => setNewFood(prev => ({ ...prev, title }))}
+            />
+
+            <Text style={styles.label}>Description *</Text>
+            <TextInput
+              placeholder="Describe the food item..."
+              style={[styles.input, styles.textArea]}
+              value={newFood.description}
+              onChangeText={description => setNewFood(prev => ({ ...prev, description }))}
+              multiline
+              numberOfLines={3}
             />
 
             <Text style={styles.label}>Food Type</Text>
             <View style={styles.typeContainer}>
-              {(['Vegan', 'Vegetarian', 'Non Veg'] as FoodType[]).map(type => (
-                <TouchableOpacity
-                  key={type}
-                  style={[
-                    styles.typeButton,
-                    newFood.type === type && styles.typeButtonSelected,
-                  ]}
-                  onPress={() => handleTypeSelect(type)}
-                >
-                  <Text style={[
-                    styles.typeButtonText,
-                    newFood.type === type && styles.typeButtonTextSelected,
-                  ]}>{type}</Text>
-                </TouchableOpacity>
-              ))}
+              <TouchableOpacity
+                style={[
+                  styles.typeButton,
+                  newFood.isVegan && styles.typeButtonSelected,
+                ]}
+                onPress={handleVeganToggle}
+              >
+                <Text style={[
+                  styles.typeButtonText,
+                  newFood.isVegan && styles.typeButtonTextSelected,
+                ]}>Vegan</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[
+                  styles.typeButton,
+                  newFood.isVegetarian && !newFood.isVegan && styles.typeButtonSelected,
+                ]}
+                onPress={handleVegetarianToggle}
+              >
+                <Text style={[
+                  styles.typeButtonText,
+                  newFood.isVegetarian && !newFood.isVegan && styles.typeButtonTextSelected,
+                ]}>Vegetarian</Text>
+              </TouchableOpacity>
             </View>
 
             <Text style={styles.label}>Allergens (Optional)</Text>
@@ -206,46 +261,25 @@ export const ShareFood: React.FC<{ navigation?: any }> = ({ navigation }) => {
               ))}
             </View>
 
-            <Text style={styles.label}>Halal</Text>
-            <TouchableOpacity
-              style={[
-                styles.halalButton,
-                newFood.isHalal && styles.halalButtonSelected,
-              ]}
-              onPress={() => setNewFood(prev => ({ ...prev, isHalal: !prev.isHalal }))}
-            >
-              <View style={[styles.checkbox, newFood.isHalal && styles.checkboxSelected]}>
-                <Text style={styles.checkboxText}>{newFood.isHalal ? '☑️' : '□'}</Text>
-              </View>
-              <Text style={[
-                styles.halalButtonText,
-                newFood.isHalal && styles.halalButtonTextSelected,
-              ]}>
-                Halal
-              </Text>
-            </TouchableOpacity>
+            <Text style={styles.label}>Expiry Hours *</Text>
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              placeholder="Hours until food expires (e.g. 24)"
+              value={String(newFood.expiryHours)}
+              onChangeText={hours => setNewFood(prev => ({ ...prev, expiryHours: parseInt(hours) || 24 }))}
+            />
 
-            <Text style={styles.label}>Pickup Date & Time Range</Text>
-            <View style={styles.dateTimeRow}>
-              <TouchableOpacity
-                onPress={handleSetStartTime}
-                style={styles.dateButton}
-              >
-                <Text style={styles.dateButtonLabel}>Start Time</Text>
-                <Text style={styles.dateButtonText}>
-                  {newFood.pickupStart.toLocaleString()}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleSetEndTime}
-                style={styles.dateButton}
-              >
-                <Text style={styles.dateButtonLabel}>End Time</Text>
-                <Text style={styles.dateButtonText}>
-                  {newFood.pickupEnd.toLocaleString()}
-                </Text>
-              </TouchableOpacity>
-            </View>
+            <Text style={styles.label}>Pickup Instructions</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={newFood.pickupInstructions}
+              onChangeText={instructions => setNewFood(prev => ({ ...prev, pickupInstructions: instructions }))}
+              placeholder="Special pickup instructions..."
+              multiline
+              numberOfLines={3}
+              placeholderTextColor={colors.textSecondary}
+            />
 
             <Text style={styles.label}>Quantity *</Text>
             <TextInput
@@ -253,7 +287,7 @@ export const ShareFood: React.FC<{ navigation?: any }> = ({ navigation }) => {
               keyboardType="numeric"
               placeholder="Number of servings available"
               value={String(newFood.quantity)}
-              onChangeText={quantity => setNewFood(prev => ({ ...prev, quantity: Number(quantity) || 1 }))}
+              onChangeText={quantity => setNewFood(prev => ({ ...prev, quantity: quantity || '1' }))}
             />
 
             <View style={styles.modalButtons}>
@@ -311,8 +345,9 @@ export const ShareFood: React.FC<{ navigation?: any }> = ({ navigation }) => {
           
           {foodItems.length > 0 && (
             <Button
-              title={`Publish ${foodItems.length} Item(s)`}
+              title={loading ? "Publishing..." : `Publish ${foodItems.length} Item(s)`}
               onPress={handlePublish}
+              disabled={loading}
             />
           )}
         </View>
@@ -398,6 +433,12 @@ const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadi
       color: colors.textSecondary,
       fontWeight: typography.fontWeightMedium,
     },
+    foodItemDescription: {
+      fontSize: typography.sizes.regular,
+      color: colors.textSecondary,
+      marginBottom: spacing.sm,
+      fontStyle: 'italic',
+    },
     allergensContainer: {
       flexDirection: 'row',
       marginBottom: spacing.sm,
@@ -475,6 +516,10 @@ const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadi
       backgroundColor: colors.surface,
       color: colors.textPrimary,
       marginBottom: spacing.sm,
+    },
+    textArea: {
+      height: 80,
+      textAlignVertical: 'top',
     },
     typeContainer: {
       flexDirection: 'row',

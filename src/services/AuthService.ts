@@ -3,7 +3,6 @@ import { User, LoginCredentials, RegisterCredentials } from '../types/auth';
 import { ProfileService } from './ProfileService';
 
 export class AuthService {
-  // Login with email and password
   static async login(credentials: LoginCredentials): Promise<User> {
     try {
       const userCredential = await firebaseAuth.signInWithEmailAndPassword(
@@ -13,7 +12,6 @@ export class AuthService {
 
       const firebaseUser = userCredential.user;
       
-      // Get user profile from Firestore
       const userProfile = await ProfileService.getUserProfile(firebaseUser.uid);
       
       if (userProfile) {
@@ -39,7 +37,6 @@ export class AuthService {
     }
   }
 
-  // Register with email, password, name, and role
   static async register(credentials: RegisterCredentials): Promise<User> {
     try {
       const userCredential = await firebaseAuth.createUserWithEmailAndPassword(
@@ -49,12 +46,10 @@ export class AuthService {
 
       const firebaseUser = userCredential.user;
 
-      // Update the user's display name
       await firebaseUser.updateProfile({
         displayName: credentials.name,
       });
 
-      // Create user profile in Firestore
       await ProfileService.createUserProfile(
         firebaseUser.uid,
         firebaseUser.email!,
@@ -76,7 +71,6 @@ export class AuthService {
     }
   }
 
-  // Logout
   static async logout(): Promise<void> {
     try {
       await firebaseAuth.signOut();
@@ -85,13 +79,11 @@ export class AuthService {
     }
   }
 
-  // Get current user
   static async getCurrentUser(): Promise<User | null> {
     try {
       const firebaseUser = firebaseAuth.currentUser;
       if (!firebaseUser) return null;
 
-      // Get user profile from Firestore
       const userProfile = await ProfileService.getUserProfile(firebaseUser.uid);
       
       if (userProfile && userProfile.name && userProfile.email && userProfile.role) {
@@ -104,7 +96,6 @@ export class AuthService {
       }
 
       // Fallback if no profile found in Firestore
-      console.log('⚠️ Using fallback profile for user:', firebaseUser.uid);
       return {
         id: firebaseUser.uid,
         email: firebaseUser.email!,
@@ -112,12 +103,10 @@ export class AuthService {
         role: 'restaurant', // Default role
       };
     } catch (error) {
-      console.error('❌ Error in getCurrentUser:', error);
       return null;
     }
   }
 
-  // Reset password
   static async resetPassword(email: string): Promise<void> {
     try {
       await firebaseAuth.sendPasswordResetEmail(email);
@@ -126,7 +115,6 @@ export class AuthService {
     }
   }
 
-  // Convert Firebase error codes to user-friendly messages
   private static getErrorMessage(errorCode: string): string {
     switch (errorCode) {
       case 'auth/user-not-found':

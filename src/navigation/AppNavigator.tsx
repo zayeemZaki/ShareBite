@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
 import { AuthScreen } from '../screens/auth/AuthScreen';
 import { RestaurantDashboard } from '../screens/restaurant/RestaurantDashboard';
@@ -12,51 +12,36 @@ import { AccountSettings } from '../screens/restaurant/AccountSettings';
 import { ShelterDashboard } from '../screens/shelter/ShelterDashboard';
 import { ShelterImpact } from '../screens/shelter/ShelterImpact';
 import { ShelterNearbyRestaurants } from '../screens/shelter/ShelterNearbyRestaurants';
+import { ShelterAccountSettings } from '../screens/shelter/ShelterAccountSettings';
 
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
-// Define the navigation parameter types
 export type RootStackParamList = {
-  // Auth
   Auth: undefined;
-  
-  // Restaurant screens
   RestaurantDashboard: undefined;
   ShareFood: undefined;
   RestaurantHistory: undefined;
   NearbyShelters: undefined;
   AccountSettings: undefined;
-  
-  // Shelter screens
   ShelterDashboard: undefined;
   ShelterImpact: undefined;
   ShelterNearbyRestaurants: undefined;
+  ShelterAccountSettings: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
 
-const LoadingScreen: React.FC = () => {
-  const { colors } = useTheme();
-  
-  return (
-    <View style={{ 
-      flex: 1, 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      backgroundColor: colors.background 
-    }}>
-      <ActivityIndicator size="large" color={colors.primary} />
-    </View>
-  );
-};
-
-export const ReactAppNavigator: React.FC = () => {
+export const AppNavigator: React.FC = () => {
   const { state } = useAuth();
   const { colors, isDarkMode } = useTheme();
 
   if (state.isLoading) {
-    return <LoadingScreen />;
+    return (
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
   }
 
   return (
@@ -104,14 +89,12 @@ export const ReactAppNavigator: React.FC = () => {
         }}
       >
         {!state.isAuthenticated || !state.user ? (
-          // Auth screens
           <Stack.Screen 
             name="Auth" 
             component={AuthScreen}
             options={{ headerShown: false }}
           />
         ) : state.user.role === 'restaurant' ? (
-          // Restaurant screens
           <>
             <Stack.Screen 
               name="RestaurantDashboard" 
@@ -140,7 +123,6 @@ export const ReactAppNavigator: React.FC = () => {
             />
           </>
         ) : (
-          // Shelter screens
           <>
             <Stack.Screen 
               name="ShelterDashboard" 
@@ -158,8 +140,8 @@ export const ReactAppNavigator: React.FC = () => {
               options={{ title: 'Nearby Restaurants' }}
             />
             <Stack.Screen 
-              name="AccountSettings" 
-              component={AccountSettings}
+              name="ShelterAccountSettings" 
+              component={ShelterAccountSettings}
               options={{ title: 'Account Settings' }}
             />
           </>
@@ -168,3 +150,11 @@ export const ReactAppNavigator: React.FC = () => {
     </NavigationContainer>
   );
 };
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

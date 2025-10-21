@@ -12,7 +12,7 @@ import { useNavigation as useReactNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { RootStackParamList } from '../../navigation/ReactAppNavigator';
+import { RootStackParamList } from '../../navigation/AppNavigator';
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -42,7 +42,7 @@ export const HeaderWithBurger: React.FC<HeaderWithBurgerProps> = ({
     { id: '1', title: '🏠 Dashboard', screen: 'ShelterDashboard' },
     { id: '2', title: '📊 Impact', screen: 'ShelterImpact' },
     { id: '3', title: '🏪 Nearby Restaurants', screen: 'ShelterNearbyRestaurants' },
-    { id: '4', title: '⚙️ Settings', screen: 'AccountSettings' },
+    { id: '4', title: '⚙️ Settings', screen: 'ShelterAccountSettings' },
     { id: '5', title: 'Logout', action: logout, textColor: '#e74c3c' },
   ] : [
     { id: '1', title: '🏠 Dashboard', screen: 'RestaurantDashboard' },
