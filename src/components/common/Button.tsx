@@ -1,5 +1,6 @@
 import React from 'react';
 import { Text, TouchableOpacity, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
 
 interface ButtonProps {
   title: string;
@@ -7,7 +8,7 @@ interface ButtonProps {
   style?: ViewStyle;
   textStyle?: TextStyle;
   disabled?: boolean;
-  variant?: 'primary' | 'secondary' | 'danger';
+  variant?: 'primary' | 'secondary' | 'error';
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -18,85 +19,81 @@ export const Button: React.FC<ButtonProps> = ({
   disabled = false,
   variant = 'primary',
 }) => {
+  const { isDarkMode, colors, typography, borderRadius, spacing, shadows } = useTheme();
+
   const getButtonStyle = () => {
+    const baseStyle: ViewStyle = {
+      borderRadius: borderRadius.md,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.lg,
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 48,
+      ...shadows,
+    };
+
     switch (variant) {
       case 'secondary':
-        return styles.secondaryButton;
-      case 'danger':
-        return styles.dangerButton;
+        return {
+          ...baseStyle,
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          borderColor: colors.primary,
+        };
+      case 'error':
+        return {
+          ...baseStyle,
+          backgroundColor: colors.error,
+        };
       default:
-        return styles.primaryButton;
+        return baseStyle; // primary will use gradient
     }
   };
 
-  const getTextStyle = () => {
+  const getTextStyle = (): TextStyle => {
+    const baseText: TextStyle = {
+      fontSize: typography.sizes.medium,
+      fontWeight: typography.fontWeightMedium,
+    };
+
     switch (variant) {
       case 'secondary':
-        return styles.secondaryButtonText;
-      case 'danger':
-        return styles.dangerButtonText;
+        return {
+          ...baseText,
+          color: colors.primary,
+        };
+      case 'error':
+      case 'primary':
       default:
-        return styles.primaryButtonText;
+        return {
+          ...baseText,
+          color: colors.surface,
+        };
     }
   };
+
+  const buttonStyle = getButtonStyle();
+  const textStyleFinal = getTextStyle();
 
   return (
     <TouchableOpacity
       style={[
-        styles.button,
-        getButtonStyle(),
-        disabled && styles.disabledButton,
+        buttonStyle,
+        variant === 'primary' && !disabled && { backgroundColor: colors.primary },
+        disabled && { backgroundColor: colors.textTertiary, borderColor: colors.textTertiary },
         style,
       ]}
       onPress={onPress}
       disabled={disabled}
+      activeOpacity={disabled ? 1 : 0.7}
     >
-      <Text style={[getTextStyle(), disabled && styles.disabledText, textStyle]}>
+      <Text style={[
+        textStyleFinal,
+        disabled && { color: colors.textSecondary },
+        textStyle
+      ]}>
         {title}
       </Text>
     </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  button: {
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 48,
-  },
-  primaryButton: {
-    backgroundColor: '#3498db',
-  },
-  secondaryButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#3498db',
-  },
-  dangerButton: {
-    backgroundColor: '#e74c3c',
-  },
-  disabledButton: {
-    backgroundColor: '#bdc3c7',
-  },
-  primaryButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  secondaryButtonText: {
-    color: '#3498db',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  dangerButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  disabledText: {
-    color: '#7f8c8d',
-  },
-});
