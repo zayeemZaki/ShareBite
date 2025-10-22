@@ -57,7 +57,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const user = await AuthService.getCurrentUser();
           dispatch({ type: 'SET_USER', payload: user });
         } catch (error) {
-          console.error('Error getting current user:', error);
           dispatch({ type: 'SET_LOADING', payload: false });
         }
       } else {
@@ -77,7 +76,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         dispatch({ type: 'SET_LOADING', payload: false });
       }
     } catch (error) {
-      console.error('Error checking stored auth:', error);
       dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
@@ -109,7 +107,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await AuthService.logout();
       dispatch({ type: 'LOGOUT' });
     } catch (error) {
-      console.error('Error during logout:', error);
     }
   };
 

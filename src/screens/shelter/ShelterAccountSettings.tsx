@@ -12,9 +12,9 @@ import { HeaderWithBurger } from '../../components/common/HeaderWithBurger';
 import { Button } from '../../components/common/Button';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { ProfileService, RestaurantProfile } from '../../services/ProfileService';
+import { ProfileService, ShelterProfile } from '../../services/ProfileService';
 
-export const AccountSettings: React.FC = () => {
+export const ShelterAccountSettings: React.FC = () => {
   const { state, logout } = useAuth();
   const { isDarkMode, toggleDarkMode, colors, typography, spacing, borderRadius } = useTheme();
 
@@ -25,13 +25,13 @@ export const AccountSettings: React.FC = () => {
   const [name, setName] = useState(state.user?.name || '');
   const [email, setEmail] = useState(state.user?.email || '');
   const [phone, setPhone] = useState('');
-  const [restaurantName, setRestaurantName] = useState('');
+  const [shelterName, setShelterName] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [zipCode, setZipCode] = useState('');
   const [description, setDescription] = useState('');
-  const [businessHours, setBusinessHours] = useState('');
-  const [website, setWebsite] = useState('');
+  const [capacity, setCapacity] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
 
   // Load current profile data
   useEffect(() => {
@@ -43,20 +43,17 @@ export const AccountSettings: React.FC = () => {
     
     try {
       setLoading(true);
-      const profile = await ProfileService.getUserProfile(state.user.id) as RestaurantProfile;
+      const profile = await ProfileService.getUserProfile(state.user.id) as ShelterProfile;
       
       if (profile) {
         setPhone(profile.phone || '');
-        setRestaurantName(profile.restaurantName || '');
+        setShelterName(profile.shelterName || '');
         setAddress(profile.address || '');
         setCity(profile.city || '');
         setZipCode(profile.zipCode || '');
         setDescription(profile.description || '');
-        setWebsite(profile.website || '');
-        
-        if (profile.businessHours) {
-          setBusinessHours(`${profile.businessHours.open} - ${profile.businessHours.close}`);
-        }
+        setCapacity(profile.capacity?.toString() || '');
+        setContactEmail(profile.contactEmail || '');
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to load profile data');
@@ -71,30 +68,26 @@ export const AccountSettings: React.FC = () => {
     try {
       setLoading(true);
       
-      const updates: Partial<RestaurantProfile> = {
+      const updates: Partial<ShelterProfile> = {
         id: state.user.id,
         email: state.user.email,
         name,
-        role: 'restaurant' as const,
+        role: 'shelter' as const,
         phone: phone.trim(),
-        restaurantName: restaurantName.trim(),
+        shelterName: shelterName.trim(),
         address: address.trim(),
         city: city.trim(),
         zipCode: zipCode.trim(),
         description: description.trim(),
-        website: website.trim(),
+        contactEmail: contactEmail.trim(),
         isActive: true,
       };
 
-      // Parse business hours if provided
-      if (businessHours.trim()) {
-        const [open, close] = businessHours.split('-').map(h => h.trim());
-        if (open && close) {
-          updates.businessHours = {
-            open,
-            close,
-            daysOpen: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-          };
+      // Parse capacity if provided
+      if (capacity.trim()) {
+        const capacityNum = parseInt(capacity.trim());
+        if (!isNaN(capacityNum) && capacityNum > 0) {
+          updates.capacity = capacityNum;
         }
       }
 
@@ -117,7 +110,7 @@ export const AccountSettings: React.FC = () => {
           text: 'Delete',
           style: 'destructive',
           onPress: () => {
-            Alert.alert('Account Deleted', 'Your account has been deleted.');
+            // Handle account deletion logic here
             logout();
           },
         },
@@ -129,7 +122,7 @@ export const AccountSettings: React.FC = () => {
     <View style={styles.container}>
       <HeaderWithBurger
         title="Account Settings"
-        currentScreen="AccountSettings"
+        currentScreen="ShelterAccountSettings"
       />
 
       {/* 🌙 Toggle Button */}
@@ -182,15 +175,15 @@ export const AccountSettings: React.FC = () => {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Restaurant Information</Text>
+          <Text style={styles.sectionTitle}>Shelter Information</Text>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Restaurant Name</Text>
+            <Text style={styles.label}>Shelter Name</Text>
             <TextInput
               style={styles.input}
-              value={restaurantName}
-              onChangeText={setRestaurantName}
-              placeholder="Enter restaurant name"
+              value={shelterName}
+              onChangeText={setShelterName}
+              placeholder="Enter shelter name"
               placeholderTextColor={colors.textSecondary}
             />
           </View>
@@ -234,24 +227,25 @@ export const AccountSettings: React.FC = () => {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Business Hours</Text>
+            <Text style={styles.label}>Capacity (Number of People)</Text>
             <TextInput
               style={styles.input}
-              value={businessHours}
-              onChangeText={setBusinessHours}
-              placeholder="e.g., 9:00 AM - 9:00 PM"
+              value={capacity}
+              onChangeText={setCapacity}
+              placeholder="e.g., 50"
+              keyboardType="numeric"
               placeholderTextColor={colors.textSecondary}
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Website</Text>
+            <Text style={styles.label}>Contact Email</Text>
             <TextInput
               style={styles.input}
-              value={website}
-              onChangeText={setWebsite}
-              placeholder="https://yourrestaurant.com"
-              keyboardType="url"
+              value={contactEmail}
+              onChangeText={setContactEmail}
+              placeholder="contact@yourshelter.org"
+              keyboardType="email-address"
               placeholderTextColor={colors.textSecondary}
             />
           </View>
@@ -262,7 +256,7 @@ export const AccountSettings: React.FC = () => {
               style={[styles.input, styles.textArea]}
               value={description}
               onChangeText={setDescription}
-              placeholder="Tell us about your restaurant and the type of food you serve..."
+              placeholder="Tell us about your shelter and the people you serve..."
               multiline
               numberOfLines={4}
               placeholderTextColor={colors.textSecondary}

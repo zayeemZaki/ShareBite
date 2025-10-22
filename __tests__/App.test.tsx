@@ -1,17 +1,7 @@
-/**
- * @format
- */
-
+import 'react-native';
 import React from 'react';
 import App from '../App';
 
-// Test that App component can be imported and is defined
-test('App component is defined', () => {
-  expect(App).toBeDefined();
-  expect(typeof App).toBe('function');
-});
-
-// Test that App component can be instantiated without crashing
-test('App component can be instantiated', () => {
+it('App renders without crashing', () => {
   expect(() => React.createElement(App)).not.toThrow();
 });

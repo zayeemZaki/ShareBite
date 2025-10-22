@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, TouchableOpacity, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { Text, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 
 interface ButtonProps {
@@ -19,7 +19,7 @@ export const Button: React.FC<ButtonProps> = ({
   disabled = false,
   variant = 'primary',
 }) => {
-  const { isDarkMode, colors, typography, borderRadius, spacing, shadows } = useTheme();
+  const { colors, borderRadius, spacing, typography, shadows } = useTheme();
 
   const getButtonStyle = () => {
     const baseStyle: ViewStyle = {

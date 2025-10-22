@@ -1,91 +1,153 @@
 import React from 'react';
-import { View, ActivityIndicator, StyleSheet, useColorScheme } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
+
 import { AuthScreen } from '../screens/auth/AuthScreen';
 import { RestaurantDashboard } from '../screens/restaurant/RestaurantDashboard';
+import { ShareFood } from '../screens/restaurant/ShareFood';
+import { RestaurantHistory } from '../screens/restaurant/RestaurantHistory';
+import { NearbyShelters } from '../screens/restaurant/NearbyShelters';
+import { AccountSettings } from '../screens/restaurant/AccountSettings';
 import { ShelterDashboard } from '../screens/shelter/ShelterDashboard';
 import { ShelterImpact } from '../screens/shelter/ShelterImpact';
 import { ShelterNearbyRestaurants } from '../screens/shelter/ShelterNearbyRestaurants';
-import { VolunteerDashboard } from '../screens/volunteer/VolunteerDashboard';
-import { ShareFood } from '../screens/restaurant/ShareFood';
-import { RestaurantHistory } from '../screens/restaurant/RestaurantHistory';
-import { AccountSettings } from '../screens/restaurant/AccountSettings';
-import { NearbyShelters } from '../screens/restaurant/NearbyShelters';
-import { useAuth } from '../context/AuthContext';
-import { NavigationProvider, useNavigation } from '../context/NavigationContext';
+import { ShelterAccountSettings } from '../screens/shelter/ShelterAccountSettings';
 
-const RoleBasedNavigator: React.FC = () => {
+import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+
+export type RootStackParamList = {
+  Auth: undefined;
+  RestaurantDashboard: undefined;
+  ShareFood: undefined;
+  RestaurantHistory: undefined;
+  NearbyShelters: undefined;
+  AccountSettings: undefined;
+  ShelterDashboard: undefined;
+  ShelterImpact: undefined;
+  ShelterNearbyRestaurants: undefined;
+  ShelterAccountSettings: undefined;
+};
+
+const Stack = createStackNavigator<RootStackParamList>();
+
+export const AppNavigator: React.FC = () => {
   const { state } = useAuth();
-  const { currentScreen } = useNavigation();
-  const isDarkMode = useColorScheme() === 'dark';
+  const { colors, isDarkMode } = useTheme();
 
   if (state.isLoading) {
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff' }]}>
-        <ActivityIndicator size="large" color="#3498db" />
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
-  if (!state.isAuthenticated || !state.user) {
-    return <AuthScreen />;
-  }
-
-  // Role-based navigation with screen routing
-  switch (state.user.role) {
-    case 'restaurant':
-      switch (currentScreen) {
-        case 'ShareFood':
-          return <ShareFood />;
-        case 'RestaurantHistory':
-          return <RestaurantHistory />;
-        case 'AccountSettings':
-          return <AccountSettings />;
-        case 'NearbyShelters':
-          return <NearbyShelters />;
-        default:
-          return <RestaurantDashboard />;
-      }
-    case 'shelter':
-      switch (currentScreen) {
-        case 'ShelterImpact':
-          return <ShelterImpact />;
-        case 'ShelterNearbyRestaurants':
-          return <ShelterNearbyRestaurants />;
-        case 'AccountSettings':
-          return <AccountSettings />;
-        default:
-          return <ShelterDashboard />;
-      }
-    case 'volunteer':
-      return <VolunteerDashboard />;
-    default:
-      return <AuthScreen />;
-  }
-};
-
-export const AppNavigator: React.FC = () => {
-  const { state } = useAuth();
-  
-  // Determine initial screen based on user role
-  const getInitialScreen = () => {
-    if (!state.isAuthenticated || !state.user) return 'RestaurantDashboard';
-    
-    switch (state.user.role) {
-      case 'restaurant':
-        return 'RestaurantDashboard';
-      case 'shelter':
-        return 'ShelterDashboard';
-      case 'volunteer':
-        return 'VolunteerDashboard';
-      default:
-        return 'RestaurantDashboard';
-    }
-  };
-
   return (
-    <NavigationProvider initialScreen={getInitialScreen()}>
-      <RoleBasedNavigator />
-    </NavigationProvider>
+    <NavigationContainer
+      theme={{
+        dark: isDarkMode,
+        colors: {
+          primary: colors.primary,
+          background: colors.background,
+          card: colors.surface,
+          text: colors.textPrimary,
+          border: colors.border,
+          notification: colors.error,
+        },
+        fonts: {
+          regular: {
+            fontFamily: 'System',
+            fontWeight: 'normal',
+          },
+          medium: {
+            fontFamily: 'System',
+            fontWeight: '500',
+          },
+          bold: {
+            fontFamily: 'System',
+            fontWeight: 'bold',
+          },
+          heavy: {
+            fontFamily: 'System',
+            fontWeight: '900',
+          },
+        },
+      }}
+    >
+      <Stack.Navigator
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: colors.surface,
+          },
+          headerTintColor: colors.textPrimary,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+          headerShadowVisible: false,
+        }}
+      >
+        {!state.isAuthenticated || !state.user ? (
+          <Stack.Screen 
+            name="Auth" 
+            component={AuthScreen}
+            options={{ headerShown: false }}
+          />
+        ) : state.user.role === 'restaurant' ? (
+          <>
+            <Stack.Screen 
+              name="RestaurantDashboard" 
+              component={RestaurantDashboard}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen 
+              name="ShareFood" 
+              component={ShareFood}
+              options={{ title: 'Share Food' }}
+            />
+            <Stack.Screen 
+              name="RestaurantHistory" 
+              component={RestaurantHistory}
+              options={{ title: 'History' }}
+            />
+            <Stack.Screen 
+              name="NearbyShelters" 
+              component={NearbyShelters}
+              options={{ title: 'Nearby Shelters' }}
+            />
+            <Stack.Screen 
+              name="AccountSettings" 
+              component={AccountSettings}
+              options={{ title: 'Account Settings' }}
+            />
+          </>
+        ) : (
+          <>
+            <Stack.Screen 
+              name="ShelterDashboard" 
+              component={ShelterDashboard}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen 
+              name="ShelterImpact" 
+              component={ShelterImpact}
+              options={{ title: 'Impact Dashboard' }}
+            />
+            <Stack.Screen 
+              name="ShelterNearbyRestaurants" 
+              component={ShelterNearbyRestaurants}
+              options={{ title: 'Nearby Restaurants' }}
+            />
+            <Stack.Screen 
+              name="ShelterAccountSettings" 
+              component={ShelterAccountSettings}
+              options={{ title: 'Account Settings' }}
+            />
+          </>
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 };
 
