@@ -5,17 +5,17 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
-import { HeaderWithBurger } from '../../components/common/HeaderWithBurger';
+import { Header } from '../../components/common/Header';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { FoodService, FoodItem } from '../../services/FoodService';
+import { formatDate } from '../../utils';
 
 export const RestaurantHistory: React.FC = () => {
-  const { colors } = useTheme();
+  const { isDarkMode, colors, typography, borderRadius, spacing, shadows } = useTheme();
   const { state } = useAuth();
-  const styles = getStyles(colors);
+  const styles = getStyles(isDarkMode, colors, typography, borderRadius, spacing, shadows);
 
   const [historyItems, setHistoryItems] = useState<FoodItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,13 +30,54 @@ export const RestaurantHistory: React.FC = () => {
     loadHistoryData();
   }, []);
 
+  const getDateGroup = (timestamp: any) => {
+    if (!timestamp?.seconds) return 'Older';
+    
+    const date = new Date(timestamp.seconds * 1000);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays <= 7) return 'This Week';
+    if (diffDays <= 30) return 'This Month';
+    return 'Older';
+  };
+
+  const groupItemsByDate = (items: FoodItem[]) => {
+    const groups: { [key: string]: FoodItem[] } = {
+      'Today': [],
+      'Yesterday': [],
+      'This Week': [],
+      'This Month': [],
+      'Older': []
+    };
+    
+    items.forEach(item => {
+      const group = getDateGroup(item.createdAt);
+      groups[group].push(item);
+    });
+    
+    return groups;
+  };
+
   const loadHistoryData = async () => {
     if (!state.user) return;
     
     try {
       setLoading(true);
-      const items = await FoodService.getFoodItemsByRestaurant(state.user.id);
-      setHistoryItems(items);
+      // Use the method that includes request details
+      const items = await FoodService.getRestaurantFoodItemsWithRequests(state.user.id);
+      
+      // Sort by creation date, newest first
+      const sortedItems = items.sort((a, b) => {
+        const aTime = a.createdAt?.seconds || 0;
+        const bTime = b.createdAt?.seconds || 0;
+        return bTime - aTime;
+      });
+      
+      setHistoryItems(sortedItems);
       
       // Calculate real stats from the data
       const deliveredItems = items.filter(item => 
@@ -49,10 +90,16 @@ export const RestaurantHistory: React.FC = () => {
         return sum + (qty * 0.5); // Assume 0.5 lbs per item average
       }, 0);
 
-      // Calculate active months
-      const firstItem = items[items.length - 1];
-      const activeMonths = firstItem ? 
-        Math.max(1, Math.ceil((Date.now() - firstItem.createdAt.seconds * 1000) / (1000 * 60 * 60 * 24 * 30))) : 0;
+      // Calculate active months from first item created
+      const oldestItem = items.reduce((oldest, item) => {
+        if (!oldest || (item.createdAt?.seconds || 0) < (oldest.createdAt?.seconds || 0)) {
+          return item;
+        }
+        return oldest;
+      }, items[0]);
+      
+      const activeMonths = oldestItem?.createdAt ? 
+        Math.max(1, Math.ceil((Date.now() - oldestItem.createdAt.seconds * 1000) / (1000 * 60 * 60 * 24 * 30))) : 0;
 
       setStats({
         totalItems: items.length,
@@ -61,15 +108,10 @@ export const RestaurantHistory: React.FC = () => {
         activeMonths,
       });
     } catch (error) {
-      Alert.alert('Error', 'Failed to load history data');
+      console.error('Error loading history data:', error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatDate = (timestamp: any) => {
-    if (!timestamp || !timestamp.seconds) return 'Unknown date';
-    return new Date(timestamp.seconds * 1000).toLocaleDateString();
   };
 
   const getStatusColor = (item: FoodItem) => {
@@ -86,12 +128,88 @@ export const RestaurantHistory: React.FC = () => {
     return 'Available';
   };
 
+  const renderHistoryGroups = () => {
+    const groupedItems = groupItemsByDate(historyItems);
+    const orderedGroups = ['Today', 'Yesterday', 'This Week', 'This Month', 'Older'];
+    
+    return (
+      <>
+        {orderedGroups
+          .filter(groupName => groupedItems[groupName].length > 0)
+          .map(groupName => {
+            const items = groupedItems[groupName];
+            
+            return (
+              <View key={groupName} style={styles.dateGroup}>
+                <Text style={styles.dateGroupTitle}>{groupName}</Text>
+                {items.map((item) => (
+                  <View key={item.id} style={styles.modernItemCard}>
+                    <View style={styles.cardHeader}>
+                      <Text style={styles.modernItemName}>{item.title || 'Untitled'}</Text>
+                      <View style={[styles.modernStatusBadge, { backgroundColor: getStatusColor(item) }]}>
+                        <Text style={styles.modernStatusText}>{getStatusText(item)}</Text>
+                      </View>
+                    </View>
+                    
+                    <Text style={styles.modernItemDescription} numberOfLines={2}>
+                      {item.description || 'No description'}
+                    </Text>
+                    
+                    <View style={styles.modernMetaRow}>
+                      <View style={styles.modernMetaItem}>
+                        <Text style={styles.modernMetaLabel}>Quantity:</Text>
+                        <Text style={styles.modernMetaText}>{item.quantity || 'N/A'}</Text>
+                      </View>
+                      <View style={styles.modernMetaItem}>
+                        <Text style={styles.modernMetaLabel}>Created:</Text>
+                        <Text style={styles.modernMetaText}>
+                          {item.createdAt ? formatDate(item.createdAt) : 'N/A'}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {item.approvedRequest && item.approvedRequest.status === 'picked_up' && (
+                      <View style={styles.deliveryInfo}>
+                        <Text style={styles.deliveryText}>
+                          Delivered to {item.approvedRequest.shelterName || 'shelter'}
+                        </Text>
+                        {item.approvedRequest.pickedUpAt && (
+                          <Text style={styles.deliveryDate}>
+                            {formatDate(item.approvedRequest.pickedUpAt)}
+                          </Text>
+                        )}
+                      </View>
+                    )}
+                    {item.approvedRequest && item.approvedRequest.status === 'approved' && (
+                      <View style={styles.pendingInfo}>
+                        <Text style={styles.pendingText}>
+                          Awaiting pickup by {item.approvedRequest.shelterName || 'shelter'}
+                        </Text>
+                      </View>
+                    )}
+                    {item.requests && item.requests.length > 0 && !item.approvedRequest && (
+                      <View style={styles.requestInfo}>
+                        <Text style={styles.requestText}>
+                          {item.requests.filter(r => r.status === 'requested').length} pending request(s)
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                ))}
+              </View>
+            );
+          })}
+      </>
+    );
+  };
+
   if (loading) {
     return (
       <View style={styles.container}>
-        <HeaderWithBurger
+        <Header
           title="Restaurant History"
-          currentScreen="RestaurantHistory"
+          showLogo={true}
+          showShareButton={true}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -103,14 +221,14 @@ export const RestaurantHistory: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <HeaderWithBurger
-        title="Restaurant History"
-        currentScreen="RestaurantHistory"
+      <Header
+        title="History"
+        showLogo={true}
+        showShareButton={true}
       />
-
       <ScrollView style={styles.content}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📊 Your Overall Impact</Text>
+          <Text style={styles.sectionTitle}>Your Overall Impact</Text>
           <View style={styles.statsContainer}>
             <View style={styles.statCard}>
               <Text style={styles.statValue}>{stats.totalItems}</Text>
@@ -132,7 +250,7 @@ export const RestaurantHistory: React.FC = () => {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🍽️ Food Items History</Text>
+          <Text style={styles.sectionTitle}>Food Items History</Text>
           {historyItems.length === 0 ? (
             <View style={styles.emptyState}>
               <Text style={styles.emptyStateText}>
@@ -140,24 +258,9 @@ export const RestaurantHistory: React.FC = () => {
               </Text>
             </View>
           ) : (
-            historyItems.map((item) => (
-              <View key={item.id} style={styles.itemCard}>
-                <View style={styles.itemInfo}>
-                  <Text style={styles.itemName}>{item.title}</Text>
-                  <Text style={styles.itemDetails}>
-                    {item.quantity} • {formatDate(item.createdAt)}
-                  </Text>
-                  {item.approvedRequest && (
-                    <Text style={styles.itemShelter}>
-                      Delivered to: {item.approvedRequest.shelterName}
-                    </Text>
-                  )}
-                </View>
-                <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item) }]}>
-                  <Text style={styles.statusText}>{getStatusText(item)}</Text>
-                </View>
-              </View>
-            ))
+            <View>
+              {renderHistoryGroups()}
+            </View>
           )}
         </View>
       </ScrollView>
@@ -165,7 +268,7 @@ export const RestaurantHistory: React.FC = () => {
   );
 };
 
-const getStyles = (colors: any) => StyleSheet.create({
+const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadius: any, spacing: any, shadows: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -177,96 +280,195 @@ const getStyles = (colors: any) => StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: spacing.xl,
   },
   loadingText: {
     fontSize: 16,
     color: colors.textSecondary,
-    marginTop: 10,
+    marginTop: spacing.md,
   },
   section: {
-    padding: 20,
+    padding: spacing.lg,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: '700',
     color: colors.textPrimary,
-    marginBottom: 16,
+    marginBottom: spacing.lg,
+    letterSpacing: 0.2,
+  },
+  dateGroup: {
+    marginBottom: spacing.xl,
+  },
+  dateGroupTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.primary,
+    marginBottom: spacing.md,
+    paddingLeft: spacing.xs,
+    letterSpacing: 0.3,
   },
   statsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    gap: 12,
+    gap: spacing.md,
   },
   statCard: {
     flex: 1,
     minWidth: '45%',
     backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: borderRadius.xl,
+    padding: spacing.lg,
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.sm,
+    ...shadows,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   statValue: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '700',
     color: colors.primary,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
+    letterSpacing: 0.3,
   },
   statLabel: {
     fontSize: 12,
     color: colors.textSecondary,
     textAlign: 'center',
+    fontWeight: '600',
   },
   emptyState: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 24,
+    backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+    borderRadius: borderRadius.xl,
+    padding: spacing.xl,
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.md,
+    borderWidth: 2,
+    borderColor: colors.border,
+    borderStyle: 'dashed',
   },
   emptyStateText: {
-    fontSize: 16,
+    fontSize: 15,
     color: colors.textSecondary,
     textAlign: 'center',
+    lineHeight: 22,
   },
-  itemCard: {
+  // Modern Card Styles
+  modernItemCard: {
     backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: borderRadius.xl,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+    ...shadows,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.primary,
+  },
+  cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    marginBottom: spacing.sm,
   },
-  itemInfo: {
-    flex: 1,
-  },
-  itemName: {
-    fontSize: 16,
-    fontWeight: '600',
+  modernItemName: {
+    fontSize: 17,
+    fontWeight: '700',
     color: colors.textPrimary,
-    marginBottom: 4,
+    flex: 1,
+    marginRight: spacing.sm,
+    letterSpacing: 0.2,
   },
-  itemDetails: {
+  modernStatusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: borderRadius.full,
+  },
+  modernStatusText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  modernItemDescription: {
     fontSize: 14,
     color: colors.textSecondary,
-    marginBottom: 2,
+    lineHeight: 21,
+    marginBottom: spacing.md,
   },
-  itemShelter: {
+  modernMetaRow: {
+    flexDirection: 'row',
+    gap: spacing.lg,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)',
+    borderRadius: borderRadius.md,
+  },
+  modernMetaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  modernMetaLabel: {
     fontSize: 12,
-    color: colors.textTertiary,
-    fontStyle: 'italic',
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  statusText: {
-    color: '#ffffff',
-    fontSize: 12,
+    color: colors.textSecondary,
     fontWeight: '600',
+  },
+  modernMetaText: {
+    fontSize: 13,
+    color: colors.primary,
+    fontWeight: '700',
+  },
+  deliveryInfo: {
+    marginTop: spacing.md,
+    padding: spacing.md,
+    backgroundColor: isDarkMode ? 'rgba(107, 68, 35, 0.15)' : 'rgba(107, 68, 35, 0.08)',
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.success,
+  },
+  deliveryText: {
+    fontSize: 13,
+    color: colors.success,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
+  deliveryDate: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
+    fontWeight: '600',
+  },
+  pendingInfo: {
+    marginTop: spacing.md,
+    padding: spacing.md,
+    backgroundColor: isDarkMode ? 'rgba(166, 124, 82, 0.15)' : 'rgba(166, 124, 82, 0.08)',
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.warning,
+  },
+  pendingText: {
+    fontSize: 13,
+    color: colors.warning,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
+  requestInfo: {
+    marginTop: spacing.md,
+    padding: spacing.md,
+    backgroundColor: isDarkMode ? 'rgba(139, 134, 128, 0.15)' : 'rgba(139, 134, 128, 0.08)',
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.info,
+  },
+  requestText: {
+    fontSize: 13,
+    color: colors.info,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
 });

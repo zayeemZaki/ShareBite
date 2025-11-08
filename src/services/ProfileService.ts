@@ -54,7 +54,9 @@ export class ProfileService {
     email: string,
     name: string,
     role: UserRole,
-    additionalData?: any
+    phone: string,
+    address: string,
+    roleData?: any
   ): Promise<void> {
     try {
       const baseProfile: BasicUserProfile = {
@@ -62,10 +64,12 @@ export class ProfileService {
         email,
         name,
         role,
+        phone,
+        address,
         createdAt: FirestoreTimestamp.now(),
         updatedAt: FirestoreTimestamp.now(),
         isActive: true,
-        ...additionalData,
+        ...roleData,
       };
 
       await firebaseFirestore
@@ -249,12 +253,19 @@ export class ProfileService {
     }
   }
 
-  static async ensureUserProfile(userId: string, email: string, name: string, role: UserRole): Promise<void> {
+  static async ensureUserProfile(
+    userId: string, 
+    email: string, 
+    name: string, 
+    role: UserRole,
+    phone: string = '',
+    address: string = ''
+  ): Promise<void> {
     try {
       const existingProfile = await this.getUserProfile(userId);
       
       if (!existingProfile) {
-        await this.createUserProfile(userId, email, name, role);
+        await this.createUserProfile(userId, email, name, role, phone, address);
       }
     } catch (error) {
       throw new Error(`Failed to ensure user profile: ${error}`);

@@ -5,15 +5,15 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  Linking,
   TextInput,
   RefreshControl,
   Alert,
 } from 'react-native';
-import { HeaderWithBurger } from '../../components/common/HeaderWithBurger';
+import { Header } from '../../components/common/Header';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { ProfileService, ShelterProfile } from '../../services/ProfileService';
+import { getCapacityColor, getCapacityText, handleCall, handleEmail, showErrorAlert } from '../../utils';
 
 export const NearbyShelters: React.FC = () => {
   const { isDarkMode, colors, typography, borderRadius, spacing, shadows } = useTheme();
@@ -45,7 +45,7 @@ export const NearbyShelters: React.FC = () => {
         setShelters(allShelters);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to load shelters');
+      showErrorAlert('Error', 'Failed to load shelters');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -61,36 +61,6 @@ export const NearbyShelters: React.FC = () => {
     loadShelters();
   };
 
-  const handleCall = (phoneNumber: string) => {
-    if (phoneNumber) {
-      Linking.openURL(`tel:${phoneNumber}`);
-    } else {
-      Alert.alert('No Phone Number', 'This shelter has not provided a phone number.');
-    }
-  };
-
-  const handleEmail = (email: string) => {
-    if (email) {
-      Linking.openURL(`mailto:${email}`);
-    } else {
-      Alert.alert('No Email', 'This shelter has not provided an email address.');
-    }
-  };
-
-  const getCapacityColor = (capacity?: number) => {
-    if (!capacity) return '#95a5a6';
-    if (capacity >= 100) return '#27ae60'; // High capacity
-    if (capacity >= 50) return '#f39c12';  // Medium capacity
-    return '#e74c3c'; // Low capacity
-  };
-
-  const getCapacityText = (capacity?: number) => {
-    if (!capacity) return 'Unknown';
-    if (capacity >= 100) return 'High';
-    if (capacity >= 50) return 'Medium';
-    return 'Low';
-  };
-
   const filteredShelters = shelters.filter(shelter => {
     const cityMatch = city.trim() === '' || 
       (shelter.city && shelter.city.toLowerCase().includes(city.trim().toLowerCase()));
@@ -102,9 +72,10 @@ export const NearbyShelters: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <HeaderWithBurger
+      <Header
         title="Nearby Shelters"
-        currentScreen="NearbyShelters"
+        showLogo={true}
+        showShareButton={true}
       />
 
       <ScrollView 
@@ -148,54 +119,57 @@ export const NearbyShelters: React.FC = () => {
           </View>
         ) : (
           filteredShelters.map((shelter) => (
-            <View key={shelter.id} style={styles.shelterCard}>
-              <View style={styles.shelterHeader}>
+            <View key={shelter.id} style={styles.modernShelterCard}>
+              <View style={styles.modernCardHeader}>
                 <View style={styles.shelterInfo}>
-                  <Text style={styles.shelterName}>{shelter.shelterName || shelter.name}</Text>
-                  <Text style={styles.shelterAddress}>
-                    {shelter.address && shelter.city 
-                      ? `${shelter.address}, ${shelter.city}` 
-                      : shelter.address || shelter.city || 'Address not provided'
-                    }
-                  </Text>
+                  <Text style={styles.modernShelterName}>{shelter.shelterName || shelter.name}</Text>
+                  <View style={styles.addressRow}>
+                    <Text style={styles.modernShelterAddress}>
+                      {shelter.address && shelter.city 
+                        ? `${shelter.address}, ${shelter.city}` 
+                        : shelter.address || shelter.city || 'Address not provided'
+                      }
+                    </Text>
+                  </View>
                 </View>
-                <View style={[styles.capacityBadge, { backgroundColor: getCapacityColor(shelter.capacity) }]}>
-                  <Text style={styles.capacityText}>{getCapacityText(shelter.capacity)}</Text>
+                <View style={[styles.modernCapacityBadge, { backgroundColor: getCapacityColor(shelter.capacity) }]}>
+                  <Text style={styles.modernCapacityText}>{getCapacityText(shelter.capacity)}</Text>
                 </View>
               </View>
 
-              <View style={styles.shelterDetails}>
-                <View style={styles.contactButtons}>
-                  {shelter.phone && (
-                    <TouchableOpacity
-                      style={styles.contactButton}
-                      onPress={() => handleCall(shelter.phone!)}
-                    >
-                      <Text style={styles.contactButtonText}>📞 Call</Text>
-                    </TouchableOpacity>
-                  )}
-                  {(shelter.contactEmail || shelter.email) && (
-                    <TouchableOpacity
-                      style={styles.contactButton}
-                      onPress={() => handleEmail(shelter.contactEmail || shelter.email!)}
-                    >
-                      <Text style={styles.contactButtonText}>� Email</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </View>
-              
               {shelter.capacity && (
-                <Text style={styles.capacityInfo}>
-                  Capacity: {shelter.capacity} people
-                </Text>
+                <View style={styles.capacityRow}>
+                  <Text style={styles.capacityLabel}>Capacity:</Text>
+                  <Text style={styles.modernCapacityInfo}>
+                    {shelter.capacity} people
+                  </Text>
+                </View>
               )}
+
+              <View style={styles.modernContactButtons}>
+                {shelter.phone && (
+                  <TouchableOpacity
+                    style={styles.modernContactButton}
+                    onPress={() => handleCall(shelter.phone!)}
+                  >
+                    <Text style={styles.modernContactButtonText}>Call</Text>
+                  </TouchableOpacity>
+                )}
+                {(shelter.contactEmail || shelter.email) && (
+                  <TouchableOpacity
+                    style={styles.modernContactButton}
+                    onPress={() => handleEmail(shelter.contactEmail || shelter.email!)}
+                  >
+                    <Text style={styles.modernContactButtonText}>Email</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
           ))
         )}
 
-        <View style={styles.section}>
-          <Text style={styles.noteTitle}>💡 How to Help</Text>
+        <View style={styles.helpSection}>
+          <Text style={styles.noteTitle}>How to Help</Text>
           <Text style={styles.noteText}>
             • Contact shelters directly to coordinate food donations{'\n'}
             • Check their current capacity before delivering{'\n'}
@@ -220,25 +194,29 @@ const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadi
     filterSection: {
       padding: spacing.lg,
       backgroundColor: colors.surface,
-      borderRadius: borderRadius.md,
-      margin: spacing.md,
+      borderRadius: borderRadius.xl,
+      margin: spacing.lg,
       ...shadows,
-    },
-    filterLabel: {
-      fontSize: typography.sizes.regular,
-      fontWeight: typography.fontWeightMedium,
-      marginBottom: spacing.xs,
-      color: colors.textPrimary,
-    },
-    filterInput: {
-      backgroundColor: colors.surface,
-      borderRadius: borderRadius.sm,
+      elevation: 2,
       borderWidth: 1,
       borderColor: colors.border,
-      paddingHorizontal: spacing.sm,
-      paddingVertical: spacing.xs,
-      marginBottom: spacing.sm,
-      fontSize: typography.sizes.regular,
+    },
+    filterLabel: {
+      fontSize: 13,
+      fontWeight: '600',
+      marginBottom: spacing.xs,
+      color: colors.textPrimary,
+      letterSpacing: 0.2,
+    },
+    filterInput: {
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.background,
+      borderRadius: borderRadius.lg,
+      borderWidth: 1,
+      borderColor: colors.border,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      marginBottom: spacing.md,
+      fontSize: 15,
       color: colors.textPrimary,
     },
     shelterCard: {
@@ -326,34 +304,141 @@ const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadi
       fontSize: typography.sizes.regular,
       fontWeight: typography.fontWeightMedium,
     },
-    noteTitle: {
-      fontSize: typography.sizes.large,
-      fontWeight: typography.fontWeightMedium,
-      color: colors.textPrimary,
-      marginBottom: spacing.sm,
-    },
-    noteText: {
-      fontSize: typography.sizes.regular,
-      color: colors.textSecondary,
-      lineHeight: 20,
-    },
     section: {
       padding: spacing.lg,
     },
-    emptyState: {
-      padding: spacing.xl,
-      alignItems: 'center',
+    helpSection: {
       backgroundColor: colors.surface,
-      borderRadius: borderRadius.md,
+      borderRadius: borderRadius.xl,
+      padding: spacing.lg,
+      margin: spacing.lg,
+      marginTop: spacing.xl,
+      ...shadows,
+      elevation: 2,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.primary,
+    },
+    emptyState: {
+      padding: spacing.xl * 2,
+      alignItems: 'center',
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+      borderRadius: borderRadius.xl,
       borderWidth: 2,
       borderColor: colors.border,
       borderStyle: 'dashed',
-      margin: spacing.md,
+      margin: spacing.lg,
     },
     emptyText: {
-      fontSize: typography.sizes.medium,
+      fontSize: 15,
       color: colors.textSecondary,
       textAlign: 'center',
+      lineHeight: 22,
+    },
+    // Modern styles
+    modernShelterCard: {
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.xl,
+      padding: spacing.lg,
+      marginHorizontal: spacing.lg,
+      marginBottom: spacing.md,
+      ...shadows,
+      elevation: 3,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.primary,
+    },
+    modernCardHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: spacing.md,
+    },
+    modernShelterName: {
+      fontSize: 17,
+      fontWeight: '700',
+      color: colors.textPrimary,
+      marginBottom: spacing.xs,
+      letterSpacing: 0.2,
+    },
+    addressRow: {
+      marginTop: spacing.xxs,
+    },
+    modernShelterAddress: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      lineHeight: 20,
+    },
+    modernCapacityBadge: {
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: borderRadius.full,
+      minWidth: 70,
+      alignItems: 'center',
+    },
+    modernCapacityText: {
+      color: '#FFFFFF',
+      fontSize: 11,
+      fontWeight: '700',
+      letterSpacing: 0.5,
+    },
+    capacityRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+      marginBottom: spacing.md,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)',
+      borderRadius: borderRadius.md,
+    },
+    capacityIcon: {
+      fontSize: 16,
+      marginRight: spacing.sm,
+    },
+    capacityLabel: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      fontWeight: '600',
+    },
+    modernCapacityInfo: {
+      fontSize: 13,
+      color: colors.primary,
+      fontWeight: '700',
+    },
+    modernContactButtons: {
+      flexDirection: 'row',
+      gap: spacing.md,
+    },
+    modernContactButton: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.primary,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.lg,
+      borderRadius: borderRadius.xl,
+      ...shadows,
+      elevation: 2,
+    },
+    modernContactButtonText: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: '#FFFFFF',
+      letterSpacing: 0.3,
+    },
+    noteTitle: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: colors.textPrimary,
+      marginBottom: spacing.md,
+      letterSpacing: 0.2,
+    },
+    noteText: {
+      fontSize: 14,
+      color: colors.textSecondary,
       lineHeight: 22,
     },
   });
