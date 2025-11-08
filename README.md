@@ -110,12 +110,19 @@ ShareBite/
 │   │   │   └── RoleSelector.tsx
 │   │   └── common/          # Common UI components
 │   │       ├── Button.tsx
-│   │       └── HeaderWithBurger.tsx
+│   │       ├── Header.tsx
+│   │       ├── PrimaryButton.tsx
+│   │       ├── OutlineButton.tsx
+│   │       ├── StatusBadge.tsx
+│   │       ├── Card.tsx
+│   │       ├── SectionHeader.tsx
+│   │       ├── EmptyState.tsx
+│   │       └── Typography.tsx
 │   ├── context/             # React Context providers
 │   │   ├── AuthContext.tsx  # Authentication state management
 │   │   └── ThemeContext.tsx # Theme and dark mode management
 │   ├── navigation/          # App navigation logic
-│   │   └── ReactAppNavigator.tsx
+│   │   └── AppNavigator.tsx
 │   ├── screens/             # Screen components
 │   │   ├── auth/
 │   │   │   └── AuthScreen.tsx
@@ -131,11 +138,25 @@ ShareBite/
 │   │       └── ShelterNearbyRestaurants.tsx
 │   ├── services/            # Business logic services
 │   │   ├── AuthService.ts
+│   │   ├── FoodService.ts
 │   │   └── ProfileService.ts
-│   ├── theme/               # App theming and styles
+│   ├── styles/              # Design system styles
+│   │   ├── commonStyles.ts
+│   │   ├── designTokens.ts
 │   │   └── index.ts
-│   └── types/               # TypeScript type definitions
-│       └── auth.ts
+│   ├── theme/               # App theming and colors
+│   │   ├── colors.ts
+│   │   └── index.ts
+│   ├── types/               # TypeScript type definitions
+│   │   └── auth.ts
+│   └── utils/               # Utility functions
+│       ├── foodItemUtils.ts
+│       ├── dateUtils.ts
+│       ├── shelterUtils.ts
+│       ├── styleUtils.ts
+│       ├── communicationUtils.ts
+│       ├── alertUtils.ts
+│       └── index.ts
 ├── android/                 # Android-specific files
 ├── ios/                     # iOS-specific files
 ├── __tests__/               # Test files
@@ -151,7 +172,7 @@ ShareBite/
 - **Persistent login**: Uses Firebase auth state persistence
 
 #### 🎨 UI Components
-- **Reusable components**: Consistent Button and HeaderWithBurger components
+- **Reusable components**: Consistent Button and Header components
 - **Theme system**: Centralized theme management with dark mode support
 - **React Navigation**: Standard navigation with proper TypeScript types
 - **Responsive design**: Works across different screen sizes

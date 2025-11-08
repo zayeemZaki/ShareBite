@@ -10,7 +10,7 @@ interface ThemeContextType {
   typography: typeof theme.typography;
   spacing: typeof theme.spacing;
   borderRadius: typeof theme.borderRadius;
-  shadows: typeof theme.shadows.light;
+  shadows: typeof theme.shadows;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -58,7 +58,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   };
 
   const colors = isDarkMode ? theme.colors.dark : theme.colors.light;
-  const shadows = isDarkMode ? theme.shadows.dark : theme.shadows.light;
 
   const value: ThemeContextType = {
     isDarkMode,
@@ -67,7 +66,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     typography: theme.typography,
     spacing: theme.spacing,
     borderRadius: theme.borderRadius,
-    shadows,
+    shadows: theme.shadows,
   };
 
   return (

@@ -5,12 +5,13 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
-import { HeaderWithBurger } from '../../components/common/HeaderWithBurger';
+import { TrendingUp, Users } from 'lucide-react-native';
+import { Header } from '../../components/common/Header';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { FoodService, FoodItemRequest, FoodItem } from '../../services/FoodService';
+import { useCustomAlert } from '../../hooks/useCustomAlert';
 
 interface ImpactStats {
   requestsSent: number;
@@ -22,6 +23,7 @@ interface ImpactStats {
 export const ShelterImpact: React.FC = () => {
   const { colors, typography, borderRadius, spacing, shadows, isDarkMode } = useTheme();
   const { state } = useAuth();
+  const { showErrorAlert, AlertComponent } = useCustomAlert();
   const styles = getStyles(isDarkMode, colors, typography, borderRadius, spacing, shadows);
 
   const [stats, setStats] = useState<ImpactStats>({
@@ -75,7 +77,7 @@ export const ShelterImpact: React.FC = () => {
           .slice(0, 5)
       );
     } catch (error) {
-      Alert.alert('Error', 'Failed to load impact data');
+      showErrorAlert('Error', 'Failed to load impact data');
     } finally {
       setLoading(false);
     }
@@ -105,7 +107,7 @@ export const ShelterImpact: React.FC = () => {
   if (loading) {
     return (
       <View style={styles.container}>
-        <HeaderWithBurger
+        <Header
           title="Impact Dashboard"
           currentScreen="ShelterImpact"
         />
@@ -119,32 +121,30 @@ export const ShelterImpact: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <HeaderWithBurger
-        title="Impact Dashboard"
-        currentScreen="ShelterImpact"
-      />
-
-      <ScrollView style={styles.content}>
+        <Header
+          title="Impact Dashboard"
+          showLogo={true}
+        />      <ScrollView style={styles.content}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📊 Your Impact</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: spacing.md }}>
+            <TrendingUp size={20} color={colors.primary} strokeWidth={2} />
+            <Text style={styles.sectionTitle}>Your Impact</Text>
+          </View>
           <View style={styles.statsContainer}>
             <View style={styles.statCard}>
-              <Text style={styles.statIcon}>📋</Text>
               <Text style={styles.statValue}>{stats.requestsSent}</Text>
               <Text style={styles.statLabel}>Requests Sent</Text>
             </View>
             <View style={styles.statCard}>
-              <Text style={styles.statIcon}>🍽️</Text>
               <Text style={styles.statValue}>{stats.itemsReceived}</Text>
               <Text style={styles.statLabel}>Items Received</Text>
             </View>
             <View style={styles.statCard}>
-              <Text style={styles.statIcon}>👥</Text>
+              <Users size={24} color={colors.primary} strokeWidth={2} />
               <Text style={styles.statValue}>{stats.estimatedMeals}</Text>
               <Text style={styles.statLabel}>Estimated Meals</Text>
             </View>
             <View style={styles.statCard}>
-              <Text style={styles.statIcon}>🤝</Text>
               <Text style={styles.statValue}>{stats.activePartners}</Text>
               <Text style={styles.statLabel}>Restaurant Partners</Text>
             </View>
@@ -171,6 +171,7 @@ export const ShelterImpact: React.FC = () => {
           )}
         </View>
       </ScrollView>
+      {AlertComponent}
     </View>
   );
 };

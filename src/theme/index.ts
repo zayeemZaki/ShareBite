@@ -1,106 +1,157 @@
 import { StyleSheet, ViewStyle, TextStyle, ImageStyle } from 'react-native';
 
+// Professional, minimalist theme based on neutral colors with deep teal accent
 export const theme = {
   colors: {
     light: {
-      primary: '#6366f1', // vibrant indigo
-      secondary: '#ec4899', // pink
-      accent: '#f59e0b', // amber
-      background: '#ffffff',
-      surface: '#f8fafc',
-      surfaceVariant: '#e2e8f0',
-      textPrimary: '#1e293b',
-      textSecondary: '#64748b',
-      textTertiary: '#94a3b8',
-      border: '#e2e8f0',
-      error: '#ef4444',
-      success: '#10b981',
-      warning: '#f59e0b',
-      info: '#3b82f6',
-      successLight: '#d1fae5',
-      warningLight: '#fef3c7',
-      dangerLight: '#fee2e2',
-      gradientStart: '#6366f1',
-      gradientEnd: '#ec4899',
+      // Accent - Deep Teal (used sparingly)
+      primary: '#2C5F6F',
+      primaryLight: '#3A7A8F',
+      primaryDark: '#1F4A57',
+      
+      // Backgrounds
+      background: '#FFFFFF',
+      surface: '#F5F5F7',
+      surfaceVariant: '#FAFAFA',
+      
+      // Text
+      textPrimary: '#1D1D1F',
+      textSecondary: '#6E6E73',
+      textTertiary: '#9E9EA3',
+      
+      // Borders & Dividers
+      border: '#E5E5E7',
+      divider: '#E5E5E7',
+      
+      // Status
+      success: '#2D7A4F',
+      error: '#A84848',
+      warning: '#B8860B',
+      info: '#2C5F6F',
+      
+      // Status tints (for backgrounds)
+      successLight: '#EDF7F1',
+      errorLight: '#F9EDED',
+      warningLight: '#F9F5E8',
+      
+      // Buttons
+      buttonPrimary: '#2C5F6F',
+      buttonPrimaryText: '#FFFFFF',
+      buttonSecondary: '#F5F5F7',
+      buttonSecondaryText: '#2C5F6F',
+      buttonSecondaryBorder: '#2C5F6F',
+      buttonDisabled: '#E5E5E7',
+      buttonDisabledText: '#9E9EA3',
     },
     dark: {
-      primary: '#818cf8', // lighter indigo for dark
-      secondary: '#f472b6', // lighter pink
-      accent: '#fbbf24', // lighter amber
-      background: '#0f172a',
-      surface: '#1e293b',
-      surfaceVariant: '#334155',
-      textPrimary: '#f1f5f9',
-      textSecondary: '#cbd5e1',
-      textTertiary: '#94a3b8',
-      border: '#334155',
-      error: '#f87171',
-      success: '#34d399',
-      warning: '#fbbf24',
-      info: '#60a5fa',
-      successLight: '#065f46',
-      warningLight: '#92400e',
-      dangerLight: '#991b1b',
-      gradientStart: '#818cf8',
-      gradientEnd: '#f472b6',
+      // Accent - Deep Teal (lightened for dark mode)
+      primary: '#3A7A8F',
+      primaryLight: '#4A8FA4',
+      primaryDark: '#2C5F6F',
+      
+      // Backgrounds
+      background: '#000000',
+      surface: '#1C1C1E',
+      surfaceVariant: '#2C2C2E',
+      
+      // Text
+      textPrimary: '#F5F5F7',
+      textSecondary: '#98989D',
+      textTertiary: '#636366',
+      
+      // Borders & Dividers
+      border: '#38383A',
+      divider: '#38383A',
+      
+      // Status
+      success: '#34A66A',
+      error: '#C76060',
+      warning: '#D4A722',
+      info: '#3A7A8F',
+      
+      // Status tints (for dark backgrounds)
+      successLight: '#1A3D2B',
+      errorLight: '#3D2121',
+      warningLight: '#3D3317',
+      
+      // Buttons
+      buttonPrimary: '#3A7A8F',
+      buttonPrimaryText: '#FFFFFF',
+      buttonSecondary: '#2C2C2E',
+      buttonSecondaryText: '#3A7A8F',
+      buttonSecondaryBorder: '#3A7A8F',
+      buttonDisabled: '#2C2C2E',
+      buttonDisabledText: '#636366',
     },
   },
   typography: {
     fontFamily: {
-      regular: 'System',
-      medium: 'System',
-      semiBold: 'System',
-      bold: 'System',
+      primary: 'System', // SF Pro on iOS, Roboto on Android
+      heading: 'System',
+      body: 'System',
     },
     sizes: {
-      small: 12,
-      regular: 14,
-      medium: 16,
-      large: 18,
-      xlarge: 20,
-      xxlarge: 24,
+      caption: 12,
+      body: 14,
+      bodyLarge: 16,
+      h3: 18,
+      h2: 24,
+      h1: 32,
     },
-    fontWeightRegular: '400' as const,
-    fontWeightMedium: '500' as const,
-    fontWeightBold: '700' as const,
+    fontWeights: {
+      regular: '400' as const,
+      medium: '500' as const,
+      semibold: '600' as const,
+    },
   },
   spacing: {
-    xs: 4,
-    sm: 8,
-    md: 16,
-    lg: 24,
-    xl: 32,
+    xxs: 4,
+    xs: 8,
+    sm: 16,
+    md: 24,
+    lg: 32,
+    xl: 40,
     xxl: 48,
+    xxxl: 64,
   },
   borderRadius: {
+    none: 0,
     xs: 4,
-    sm: 6,
-    md: 8,
-    lg: 12,
-    xl: 16,
-    xxl: 24,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 24,
+    full: 999,
   },
   shadows: {
-    light: {
+    none: {
+      shadowColor: 'transparent',
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0,
+      shadowRadius: 0,
+      elevation: 0,
+    },
+    sm: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.04,
+      shadowRadius: 2,
+      elevation: 1,
+    },
+    md: {
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
+      shadowOpacity: 0.08,
       shadowRadius: 4,
-      elevation: 3,
+      elevation: 2,
     },
-    dark: {
+    lg: {
       shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.3,
-      shadowRadius: 4,
-      elevation: 3,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.12,
+      shadowRadius: 8,
+      elevation: 4,
     },
-  },
-  gradients: {
-    primary: ['#6366f1', '#8b5cf6'],
-    secondary: ['#ec4899', '#f97316'],
-    accent: ['#f59e0b', '#eab308'],
-    surface: ['#f8fafc', '#e2e8f0'],
   },
 };
 

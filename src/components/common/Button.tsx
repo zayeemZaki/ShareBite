@@ -52,8 +52,8 @@ export const Button: React.FC<ButtonProps> = ({
 
   const getTextStyle = (): TextStyle => {
     const baseText: TextStyle = {
-      fontSize: typography.sizes.medium,
-      fontWeight: typography.fontWeightMedium,
+      fontSize: typography.sizes.bodyLarge,
+      fontWeight: typography.fontWeights?.medium || '500',
     };
 
     switch (variant) {

@@ -4,14 +4,17 @@ import {
   Text,
   TextInput,
   StyleSheet,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Image,
+  ActivityIndicator,
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { Button } from '../common/Button';
 import { LoginCredentials } from '../../types/auth';
+import { useCustomAlert } from '../../hooks/useCustomAlert';
 
 interface LoginFormProps {
   onSwitchToRegister: () => void;
@@ -23,40 +26,42 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   isDarkMode = false,
 }) => {
   const { login, resetPassword, state } = useAuth();
+  const { colors, spacing, typography, borderRadius } = useTheme();
+  const { showSuccessAlert, showErrorAlert, AlertComponent } = useCustomAlert();
   const [credentials, setCredentials] = useState<LoginCredentials>({
     email: '',
     password: '',
   });
 
-  const styles = getStyles(isDarkMode);
+  const styles = getStyles(isDarkMode, colors, spacing, typography, borderRadius);
 
   const handleLogin = async () => {
     if (!credentials.email || !credentials.password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      showErrorAlert('Error', 'Please fill in all fields');
       return;
     }
 
     try {
       await login(credentials);
     } catch (error: any) {
-      Alert.alert('Login Failed', error.message || 'Invalid email or password');
+      showErrorAlert('Login Failed', error.message || 'Invalid email or password');
     }
   };
 
   const handleForgotPassword = async () => {
     if (!credentials.email) {
-      Alert.alert('Error', 'Please enter your email address first');
+      showErrorAlert('Error', 'Please enter your email address first');
       return;
     }
 
     try {
       await resetPassword(credentials.email);
-      Alert.alert(
+      showSuccessAlert(
         'Password Reset',
         'Password reset email sent! Check your inbox and follow the instructions.'
       );
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to send password reset email');
+      showErrorAlert('Error', error.message || 'Failed to send password reset email');
     }
   };
 
@@ -67,13 +72,17 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.form}>
-          <Text style={styles.title}>Welcome Back to ShareBite</Text>
+          <Image
+            source={require('../../../ShareBiteLogo.jpg')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <Text style={styles.subtitle}>Sign in to continue</Text>
 
           <TextInput
             style={styles.input}
             placeholder="Email"
-            placeholderTextColor={isDarkMode ? '#95a5a6' : '#7f8c8d'}
+            placeholderTextColor={colors.textTertiary}
             value={credentials.email}
             onChangeText={(email) => setCredentials({ ...credentials, email })}
             keyboardType="email-address"
@@ -84,7 +93,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           <TextInput
             style={styles.input}
             placeholder="Password"
-            placeholderTextColor={isDarkMode ? '#95a5a6' : '#7f8c8d'}
+            placeholderTextColor={colors.textTertiary}
             value={credentials.password}
             onChangeText={(password) => setCredentials({ ...credentials, password })}
             secureTextEntry
@@ -96,6 +105,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({
             disabled={state.isLoading}
             style={styles.loginButton}
           />
+
+          {state.isLoading && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color={colors.primary} />
+              <Text style={styles.loadingText}>Signing in...</Text>
+            </View>
+          )}
 
           <Button
             title="Forgot Password?"
@@ -112,11 +128,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           />
         </View>
       </ScrollView>
+      {AlertComponent}
     </KeyboardAvoidingView>
   );
 };
 
-const getStyles = (isDarkMode: boolean) => StyleSheet.create({
+const getStyles = (isDarkMode: boolean, colors: any, spacing: any, typography: any, borderRadius: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -125,41 +142,60 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
     justifyContent: 'center',
   },
   form: {
-    padding: 24,
+    padding: spacing.md,
     maxWidth: 400,
     alignSelf: 'center',
     width: '100%',
   },
+  logo: {
+    width: 120,
+    height: 120,
+    alignSelf: 'center',
+    marginBottom: spacing.sm,
+  },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: isDarkMode ? '#ffffff' : '#2c3e50',
+    fontSize: typography.sizes.h1,
+    fontWeight: typography.fontWeights?.semibold || '700',
+    color: colors.textPrimary,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.xs,
   },
   subtitle: {
-    fontSize: 16,
-    color: isDarkMode ? '#bdc3c7' : '#7f8c8d',
+    fontSize: typography.sizes.bodyLarge,
+    color: colors.textSecondary,
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: spacing.lg,
   },
   input: {
     borderWidth: 1,
-    borderColor: isDarkMode ? '#444' : '#ddd',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-    fontSize: 16,
-    backgroundColor: isDarkMode ? '#2c2c2c' : '#ffffff',
-    color: isDarkMode ? '#ffffff' : '#2c3e50',
+    borderColor: colors.border,
+    borderRadius: borderRadius.sm,
+    padding: spacing.sm,
+    marginBottom: spacing.sm,
+    fontSize: typography.sizes.bodyLarge,
+    backgroundColor: colors.surface,
+    color: colors.textPrimary,
+    minHeight: 48,
   },
   loginButton: {
-    marginBottom: 24,
+    marginBottom: spacing.md,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  loadingText: {
+    marginLeft: spacing.sm,
+    fontSize: typography.sizes.body,
+    color: colors.textSecondary,
   },
   forgotPasswordButton: {
-    marginBottom: 24,
+    marginBottom: spacing.md,
   },
   switchButton: {
-    marginTop: 8,
+    marginTop: spacing.xs,
   },
 });

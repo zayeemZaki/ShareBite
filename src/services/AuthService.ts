@@ -15,12 +15,34 @@ export class AuthService {
       const userProfile = await ProfileService.getUserProfile(firebaseUser.uid);
       
       if (userProfile) {
-        return {
+        const baseUser = {
           id: userProfile.id,
           email: userProfile.email,
           name: userProfile.name,
           role: userProfile.role,
+          phone: userProfile.phone || '',
+          address: userProfile.address || '',
         };
+
+        // Add role-specific fields if they exist
+        const profileData = userProfile as any;
+        if (userProfile.role === 'restaurant') {
+          return {
+            ...baseUser,
+            restaurantName: profileData.restaurantName,
+            restaurantType: profileData.restaurantType,
+          };
+        } else if (userProfile.role === 'shelter') {
+          return {
+            ...baseUser,
+            shelterName: profileData.shelterName,
+            shelterType: profileData.shelterType,
+            capacity: profileData.capacity,
+            operatingHours: profileData.operatingHours,
+          };
+        }
+        
+        return baseUser;
       }
 
       // Fallback if no profile found
@@ -29,6 +51,8 @@ export class AuthService {
         email: firebaseUser.email!,
         name: firebaseUser.displayName || 'User',
         role: 'restaurant', // Default role - should rarely happen
+        phone: '',
+        address: '',
       };
 
       return user;
@@ -50,11 +74,23 @@ export class AuthService {
         displayName: credentials.name,
       });
 
+      // Create user profile with all details
       await ProfileService.createUserProfile(
         firebaseUser.uid,
         firebaseUser.email!,
         credentials.name,
-        credentials.role
+        credentials.role,
+        credentials.phone,
+        credentials.address,
+        credentials.role === 'restaurant' ? {
+          restaurantName: credentials.restaurantName,
+          restaurantType: credentials.restaurantType,
+        } : {
+          shelterName: credentials.shelterName,
+          shelterType: credentials.shelterType,
+          capacity: credentials.capacity,
+          operatingHours: credentials.operatingHours,
+        }
       );
 
       // Return user object (profile is created successfully)
@@ -63,6 +99,17 @@ export class AuthService {
         email: firebaseUser.email!,
         name: credentials.name,
         role: credentials.role,
+        phone: credentials.phone,
+        address: credentials.address,
+        ...(credentials.role === 'restaurant' ? {
+          restaurantName: credentials.restaurantName,
+          restaurantType: credentials.restaurantType,
+        } : {
+          shelterName: credentials.shelterName,
+          shelterType: credentials.shelterType,
+          capacity: credentials.capacity,
+          operatingHours: credentials.operatingHours,
+        }),
       };
 
       return user;
@@ -87,12 +134,34 @@ export class AuthService {
       const userProfile = await ProfileService.getUserProfile(firebaseUser.uid);
       
       if (userProfile && userProfile.name && userProfile.email && userProfile.role) {
-        return {
+        const baseUser = {
           id: userProfile.id,
           email: userProfile.email,
           name: userProfile.name,
           role: userProfile.role,
+          phone: userProfile.phone || '',
+          address: userProfile.address || '',
         };
+
+        // Add role-specific fields if they exist
+        const profileData = userProfile as any;
+        if (userProfile.role === 'restaurant') {
+          return {
+            ...baseUser,
+            restaurantName: profileData.restaurantName,
+            restaurantType: profileData.restaurantType,
+          };
+        } else if (userProfile.role === 'shelter') {
+          return {
+            ...baseUser,
+            shelterName: profileData.shelterName,
+            shelterType: profileData.shelterType,
+            capacity: profileData.capacity,
+            operatingHours: profileData.operatingHours,
+          };
+        }
+        
+        return baseUser;
       }
 
       // Fallback if no profile found in Firestore
@@ -101,6 +170,8 @@ export class AuthService {
         email: firebaseUser.email!,
         name: firebaseUser.displayName || 'User',
         role: 'restaurant', // Default role
+        phone: '',
+        address: '',
       };
     } catch (error) {
       return null;
