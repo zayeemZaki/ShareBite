@@ -20,8 +20,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   const styles = StyleSheet.create({
     container: {
       alignItems: 'center',
-      paddingVertical: spacing.xl * 2,
-      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.xxl,
+      paddingHorizontal: spacing.xl,
     },
     iconCircle: {
       width: 100,
@@ -48,7 +48,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       color: colors.textSecondary,
       textAlign: 'center',
       lineHeight: 22,
-      paddingHorizontal: spacing.md,
+      paddingHorizontal: spacing.lg,
+      maxWidth: 280,
     },
   });
 
@@ -57,8 +58,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       <View style={styles.iconCircle}>
         <Text style={styles.icon}>{icon}</Text>
       </View>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.subtitle}>{subtitle}</Text>
+      <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">{title}</Text>
+      <Text style={styles.subtitle} numberOfLines={3} ellipsizeMode="tail">{subtitle}</Text>
     </View>
   );
 };

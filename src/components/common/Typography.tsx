@@ -30,13 +30,22 @@ export const Heading: React.FC<HeadingProps> = ({
   const styles = StyleSheet.create({
     heading: {
       fontSize: getFontSize(),
-      fontWeight: typography.fontWeightBold,
+      fontWeight: typography.fontWeightBold || '700',
       color: colors.textPrimary,
       textAlign: centered ? 'center' : 'left',
+      lineHeight: getFontSize() * 1.3,
     },
   });
 
-  return <Text style={[styles.heading, style]}>{children}</Text>;
+  return (
+    <Text 
+      style={[styles.heading, style]} 
+      numberOfLines={style?.numberOfLines || (variant === 'h1' ? 2 : 3)}
+      ellipsizeMode="tail"
+    >
+      {children}
+    </Text>
+  );
 };
 
 interface BodyTextProps {
@@ -65,11 +74,20 @@ export const BodyText: React.FC<BodyTextProps> = ({
 
   const styles = StyleSheet.create({
     text: {
-      fontSize: typography.sizes.regular,
+      fontSize: typography.sizes.regular || 14,
       color: getColor(),
       textAlign: centered ? 'center' : 'left',
+      lineHeight: (typography.sizes.regular || 14) * 1.4,
     },
   });
 
-  return <Text style={[styles.text, style]}>{children}</Text>;
+  return (
+    <Text 
+      style={[styles.text, style]}
+      numberOfLines={style?.numberOfLines}
+      ellipsizeMode={style?.ellipsizeMode || 'tail'}
+    >
+      {children}
+    </Text>
+  );
 };

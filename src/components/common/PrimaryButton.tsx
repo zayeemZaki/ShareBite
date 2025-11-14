@@ -45,13 +45,13 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
   const getPadding = () => {
     switch (size) {
       case 'small':
-        return { paddingVertical: spacing.sm, paddingHorizontal: spacing.md };
+        return { paddingVertical: spacing.md, paddingHorizontal: spacing.lg };
       case 'medium':
-        return { paddingVertical: spacing.md, paddingHorizontal: spacing.lg };
-      case 'large':
         return { paddingVertical: spacing.lg, paddingHorizontal: spacing.xl };
+      case 'large':
+        return { paddingVertical: spacing.xl, paddingHorizontal: spacing.xxl };
       default:
-        return { paddingVertical: spacing.md, paddingHorizontal: spacing.lg };
+        return { paddingVertical: spacing.lg, paddingHorizontal: spacing.xl };
     }
   };
 
@@ -83,7 +83,7 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
       elevation: disabled || loading ? 0 : 3,
       opacity: disabled || loading ? 0.6 : 1,
       width: fullWidth ? '100%' : undefined,
-      minHeight: size === 'small' ? 32 : size === 'large' ? 48 : 40,
+      minHeight: size === 'small' ? 44 : size === 'large' ? 56 : 48,
       ...(variant === 'secondary' && {
         borderWidth: 1,
         borderColor: AppColors.accent,
@@ -129,7 +129,7 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
               <Text style={styles.icon}>{icon}</Text>
             </View>
           )}
-          <Text style={styles.text}>{title}</Text>
+          <Text style={styles.text} numberOfLines={1} ellipsizeMode="tail">{title}</Text>
         </>
       )}
     </TouchableOpacity>

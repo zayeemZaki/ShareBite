@@ -25,7 +25,8 @@ export const ModernCard: React.FC<ModernCardProps> = ({
     card: {
       backgroundColor: colors.surface,
       borderRadius: borderRadius.xl,
-      padding: spacing.lg,
+      paddingHorizontal: spacing.xl,
+      paddingVertical: spacing.lg,
       ...shadows,
       elevation: 3,
       borderWidth: 1,

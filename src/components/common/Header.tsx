@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  SafeAreaView,
 } from 'react-native';
 import { Plus } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -38,44 +39,49 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <View style={styles.header}>
-      {showLogo && (
-        <TouchableOpacity
-          onPress={handleLogoPress}
-          activeOpacity={0.7}
-          style={styles.leftSection}
-        >
-          <Image
-            source={require('../../../ShareBiteLogo.jpg')}
-            style={styles.logoImage}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
-      )}
-      
-      {!showLogo && <View style={styles.leftSection} />}
-
-      <View style={styles.centerSection}>
-        <Text style={styles.title}>{title}</Text>
-      </View>
-
-      <View style={styles.rightSection}>
-        {showShareButton && (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.header}>
+        {showLogo && (
           <TouchableOpacity
-            onPress={handleSharePress}
-            style={styles.shareButton}
+            onPress={handleLogoPress}
             activeOpacity={0.7}
+            style={styles.leftSection}
           >
-            <Plus size={20} color={colors.surface} strokeWidth={2.5} />
+            <Image
+              source={require('../../../ShareBiteLogo.jpg')}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
           </TouchableOpacity>
         )}
+        
+        {!showLogo && <View style={styles.leftSection} />}
+
+        <View style={styles.centerSection}>
+          <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">{title}</Text>
+        </View>
+
+        <View style={styles.rightSection}>
+          {showShareButton && (
+            <TouchableOpacity
+              onPress={handleSharePress}
+              style={styles.shareButton}
+              activeOpacity={0.7}
+            >
+              <Plus size={20} color={colors.surface} strokeWidth={2.5} />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadius: any, spacing: any, shadows: any) =>
   StyleSheet.create({
+    safeArea: {
+      backgroundColor: colors.surface,
+    },
     header: {
       flexDirection: 'row',
       alignItems: 'center',

@@ -24,8 +24,8 @@ export const Button: React.FC<ButtonProps> = ({
   const getButtonStyle = () => {
     const baseStyle: ViewStyle = {
       borderRadius: borderRadius.md,
-      paddingVertical: spacing.sm,
-      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.xl,
       alignItems: 'center',
       justifyContent: 'center',
       minHeight: 48,
@@ -87,11 +87,15 @@ export const Button: React.FC<ButtonProps> = ({
       disabled={disabled}
       activeOpacity={disabled ? 1 : 0.7}
     >
-      <Text style={[
-        textStyleFinal,
-        disabled && { color: colors.textSecondary },
-        textStyle
-      ]}>
+      <Text 
+        style={[
+          textStyleFinal,
+          disabled && { color: colors.textSecondary },
+          textStyle
+        ]}
+        numberOfLines={1}
+        ellipsizeMode="tail"
+      >
         {title}
       </Text>
     </TouchableOpacity>

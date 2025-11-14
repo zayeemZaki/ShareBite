@@ -9,6 +9,7 @@ import {
   Dimensions,
   Modal,
   Platform,
+  SafeAreaView,
 } from 'react-native';
 import { Check } from 'lucide-react-native';
 import { useNavigation as useReactNavigation } from '@react-navigation/native';
@@ -140,12 +141,13 @@ export const RestaurantDashboard: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Header
-        title={`Welcome, ${state.user?.name}`}
-        showLogo={true}
-        showShareButton={true}
-      />
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <Header
+          title={`Welcome, ${state.user?.name}`}
+          showLogo={true}
+          showShareButton={true}
+        />
 
       <ScrollView 
         style={styles.content}
@@ -187,7 +189,7 @@ export const RestaurantDashboard: React.FC = () => {
                       <Text style={styles.modernStatusText}>{getFoodItemStatusText(item)}</Text>
                     </View>
                   </View>
-                  <Text style={styles.foodItemDescription} numberOfLines={2}>
+                  <Text style={styles.foodItemDescription} numberOfLines={3} ellipsizeMode="tail">
                     {item.description}
                   </Text>
                 </View>
@@ -222,7 +224,7 @@ export const RestaurantDashboard: React.FC = () => {
           )}
         </View>
 
-        <View style={styles.bottomSpacing} />
+        <View style={[styles.bottomSpacing, { height: Platform.OS === 'ios' ? 100 : 85 }]} />
       </ScrollView>
 
       {/* Request Management Modal */}
@@ -373,13 +375,18 @@ export const RestaurantDashboard: React.FC = () => {
         </TouchableOpacity>
       </Modal>
 
-      {AlertComponent}
-    </View>
+        {AlertComponent}
+      </View>
+    </SafeAreaView>
   );
 };
 
 const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadius: any, spacing: any, shadows: any) =>
   StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
     container: {
       flex: 1,
       backgroundColor: colors.background,
@@ -427,6 +434,7 @@ const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadi
       borderColor: colors.border,
       borderLeftWidth: 4,
       borderLeftColor: colors.primary,
+      overflow: 'hidden',
     },
     itemCardHeader: {
       marginBottom: spacing.md,
@@ -442,24 +450,32 @@ const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadi
       fontWeight: '700',
       color: colors.textPrimary,
       flex: 1,
-      marginRight: spacing.sm,
+      marginRight: spacing.md,
       letterSpacing: 0.2,
+      maxWidth: '75%',
     },
     modernStatusBadge: {
-      paddingHorizontal: 10,
-      paddingVertical: 5,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
       borderRadius: borderRadius.full,
+      minWidth: 80,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     modernStatusText: {
       color: '#ffffff',
-      fontSize: 11,
+      fontSize: 10,
       fontWeight: '700',
-      letterSpacing: 0.5,
+      letterSpacing: 0.3,
+      textAlign: 'center',
     },
     foodItemDescription: {
       fontSize: 14,
       color: colors.textSecondary,
-      lineHeight: 21,
+      lineHeight: 20,
+      paddingRight: spacing.md,
+      flexShrink: 1,
+      width: '100%',
     },
     itemCardMeta: {
       flexDirection: 'row',

@@ -26,9 +26,9 @@ export const AppColors = {
     surfaceVariant: '#FAFAFA', // Subtle variation
     border: '#E5E5E7',        // Subtle border
     divider: '#E5E5E7',       // Divider lines
-    textPrimary: '#1D1D1F',   // Off-black for text
-    textSecondary: '#6E6E73', // Medium grey for labels
-    textTertiary: '#9E9EA3',  // Light grey for hints
+    textPrimary: '#000000',   // Pure black for better contrast
+    textSecondary: '#4A4A4A', // Darker grey for better contrast
+    textTertiary: '#808080',  // Medium grey for hints
     shadow: '#000000',
   },
   
@@ -39,9 +39,9 @@ export const AppColors = {
     surfaceVariant: '#2C2C2E', // Elevated surface
     border: '#38383A',        // Subtle border
     divider: '#38383A',       // Divider lines
-    textPrimary: '#F5F5F7',   // Off-white for text
-    textSecondary: '#98989D', // Medium grey for labels
-    textTertiary: '#636366',  // Dark grey for hints
+    textPrimary: '#FFFFFF',   // Pure white for better contrast
+    textSecondary: '#AAAAB0', // Lighter grey for better contrast
+    textTertiary: '#787880',  // Medium grey for hints
     shadow: '#000000',
   },
   

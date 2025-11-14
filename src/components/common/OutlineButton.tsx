@@ -54,8 +54,8 @@ export const OutlineButton: React.FC<OutlineButtonProps> = ({
     button: {
       backgroundColor: getBackgroundColor(),
       borderRadius: borderRadius.sm,
-      paddingVertical: spacing.sm,
-      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.lg,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
@@ -63,13 +63,15 @@ export const OutlineButton: React.FC<OutlineButtonProps> = ({
       borderColor: disabled ? AppColors.buttonDisabled : getBorderColor(),
       opacity: disabled ? 0.6 : 1,
       width: fullWidth ? '100%' : undefined,
-      height: 48,
+      minHeight: 48,
     },
     text: {
       fontSize: 16,
       fontWeight: 'bold',
       color: getTextColor(),
       marginLeft: icon ? spacing.sm : 0,
+      flex: 1,
+      textAlign: 'center',
     },
     icon: {
       fontSize: 18,
@@ -84,7 +86,7 @@ export const OutlineButton: React.FC<OutlineButtonProps> = ({
       activeOpacity={0.7}
     >
       {icon && <Text style={styles.icon}>{icon}</Text>}
-      <Text style={styles.text}>{title}</Text>
+      <Text style={styles.text} numberOfLines={1} ellipsizeMode="tail">{title}</Text>
     </TouchableOpacity>
   );
 };

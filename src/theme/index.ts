@@ -15,9 +15,9 @@ export const theme = {
       surfaceVariant: '#FAFAFA',
       
       // Text
-      textPrimary: '#1D1D1F',
-      textSecondary: '#6E6E73',
-      textTertiary: '#9E9EA3',
+      textPrimary: '#000000',
+      textSecondary: '#4A4A4A',
+      textTertiary: '#808080',
       
       // Borders & Dividers
       border: '#E5E5E7',
@@ -55,9 +55,9 @@ export const theme = {
       surfaceVariant: '#2C2C2E',
       
       // Text
-      textPrimary: '#F5F5F7',
-      textSecondary: '#98989D',
-      textTertiary: '#636366',
+      textPrimary: '#FFFFFF',
+      textSecondary: '#AAAAB0',
+      textTertiary: '#787880',
       
       // Borders & Dividers
       border: '#38383A',

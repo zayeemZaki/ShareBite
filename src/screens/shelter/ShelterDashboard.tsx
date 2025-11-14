@@ -8,6 +8,7 @@ import {
   RefreshControl,
   ActivityIndicator,
   Dimensions,
+  SafeAreaView,
 } from 'react-native';
 import { MapPin, Package, Clock, Check, AlertTriangle, FileText, Calendar, Store } from 'lucide-react-native';
 import { Header } from '../../components/common/Header';
@@ -157,11 +158,12 @@ export const ShelterDashboard: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Header
-        title={`Welcome, ${state.user?.name}`}
-        showLogo={true}
-      />
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <Header
+          title={`Welcome, ${state.user?.name}`}
+          showLogo={true}
+        />
 
       <ScrollView 
         style={styles.content} 
@@ -263,7 +265,7 @@ export const ShelterDashboard: React.FC = () => {
                 >
                   <View style={styles.cardHeader}>
                     <View style={styles.cardTitleRow}>
-                      <Text style={styles.modernFoodTitle} numberOfLines={1}>{item.title}</Text>
+                      <Text style={styles.modernFoodTitle} numberOfLines={1} ellipsizeMode="tail">{item.title}</Text>
                       {isExpired(item.expiryTime) ? (
                         <View style={[styles.availableBadge, { backgroundColor: colors.error }]}>
                           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
@@ -286,7 +288,7 @@ export const ShelterDashboard: React.FC = () => {
                     </View>
                   </View>
 
-                  <Text style={styles.modernDescription} numberOfLines={2}>
+                  <Text style={styles.modernDescription} numberOfLines={3} ellipsizeMode="tail">
                     {item.description}
                   </Text>
 
@@ -344,7 +346,7 @@ export const ShelterDashboard: React.FC = () => {
                 >
                   <View style={styles.cardHeader}>
                     <View style={styles.cardTitleRow}>
-                      <Text style={styles.modernFoodTitle} numberOfLines={1}>
+                      <Text style={styles.modernFoodTitle} numberOfLines={1} ellipsizeMode="tail">
                         {request.foodItem?.title || 'Unknown Item'}
                       </Text>
                       <View style={[styles.modernStatusBadge, { backgroundColor: getStatusColor(request.status) }]}>
@@ -359,7 +361,7 @@ export const ShelterDashboard: React.FC = () => {
                     </View>
                   </View>
 
-                  <Text style={styles.modernDescription} numberOfLines={2}>
+                  <Text style={styles.modernDescription} numberOfLines={3} ellipsizeMode="tail">
                     {request.foodItem?.description || 'No description available'}
                   </Text>
 
@@ -398,16 +400,21 @@ export const ShelterDashboard: React.FC = () => {
           </View>
         )}
 
-        <View style={styles.bottomSpacing} />
+        <View style={[styles.bottomSpacing, { height: Platform.OS === 'ios' ? 100 : 85 }]} />
       </ScrollView>
 
-      {AlertComponent}
-    </View>
+        {AlertComponent}
+      </View>
+    </SafeAreaView>
   );
 };
 
 const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadius: any, spacing: any, shadows: any) =>
   StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
     container: {
       flex: 1,
       backgroundColor: colors.background,
@@ -780,11 +787,12 @@ const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadi
       marginBottom: spacing.sm,
     },
     modernFoodTitle: {
-      fontSize: typography.sizes.xl,
-      fontWeight: typography.fontWeightBold,
+      fontSize: typography.sizes.xl || 18,
+      fontWeight: typography.fontWeightBold || '700',
       color: colors.textPrimary,
       flex: 1,
-      marginRight: spacing.sm,
+      marginRight: spacing.md,
+      maxWidth: '70%',
     },
     availableBadge: {
       backgroundColor: colors.success,
@@ -813,10 +821,12 @@ const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadi
       fontWeight: typography.fontWeightMedium,
     },
     modernDescription: {
-      fontSize: typography.sizes.regular,
+      fontSize: typography.sizes.regular || 14,
       color: colors.textSecondary,
       lineHeight: 20,
       marginBottom: spacing.md,
+      flexShrink: 1,
+      width: '100%',
     },
     modernMetaRow: {
       flexDirection: 'row',

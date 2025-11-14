@@ -79,17 +79,17 @@ export const colors = {
   warning: AppColors.warning,
   info: AppColors.info,
   
-  // Neutral greys - Professional scale
+  // Neutral greys - Professional scale with improved contrast
   grey50: '#FAFAFA',
   grey100: '#F5F5F7',
   grey200: '#E5E5E7',
   grey300: '#D1D1D6',
   grey400: '#C7C7CC',
-  grey500: '#9E9EA3',
-  grey600: '#6E6E73',
-  grey700: '#48484A',
-  grey800: '#3A3A3C',
-  grey900: '#1D1D1F',
+  grey500: '#808080',
+  grey600: '#4A4A4A',
+  grey700: '#3A3A3C',
+  grey800: '#2A2A2C',
+  grey900: '#000000',
   
   // Transparent overlays
   overlay: AppColors.overlay,

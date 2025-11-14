@@ -14,22 +14,25 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ text, backgroundColor,
   const styles = StyleSheet.create({
     badge: {
       backgroundColor,
-      paddingHorizontal: spacing.md,
-      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
       borderRadius: 999,
-      minWidth: 80,
+      minWidth: 90,
+      maxWidth: 150,
       alignItems: 'center',
+      justifyContent: 'center',
     },
     text: {
       color: '#FFFFFF',
-      fontSize: typography.sizes.small,
-      fontWeight: typography.fontWeightBold,
+      fontSize: typography.sizes.small || 12,
+      fontWeight: typography.fontWeightBold || '700',
+      textAlign: 'center',
     },
   });
 
   return (
     <View style={[styles.badge, style]}>
-      <Text style={styles.text}>{text}</Text>
+      <Text style={styles.text} numberOfLines={1} ellipsizeMode="tail">{text}</Text>
     </View>
   );
 };

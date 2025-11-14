@@ -2,7 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import { Home, Building2, History, Settings, MapPin } from 'lucide-react-native';
 
 import { AuthScreen } from '../screens/auth/AuthScreen';
@@ -65,8 +65,8 @@ const RestaurantTabs: React.FC = () => {
           backgroundColor: colors.background,
           borderTopWidth: 1,
           borderTopColor: colors.border,
-          height: 60,
-          paddingBottom: 8,
+          height: Platform.OS === 'ios' ? 85 : 70,
+          paddingBottom: Platform.OS === 'ios' ? 20 : 12,
           paddingTop: 8,
         },
         tabBarActiveTintColor: colors.primary,
@@ -126,8 +126,8 @@ const ShelterTabs: React.FC = () => {
           backgroundColor: colors.background,
           borderTopWidth: 1,
           borderTopColor: colors.border,
-          height: 60,
-          paddingBottom: 8,
+          height: Platform.OS === 'ios' ? 85 : 70,
+          paddingBottom: Platform.OS === 'ios' ? 20 : 12,
           paddingTop: 8,
         },
         tabBarActiveTintColor: colors.primary,
