@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, ActivityIndicator, StyleSheet, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Home, Building2, History, Settings, MapPin } from 'lucide-react-native';
 
 import { AuthScreen } from '../screens/auth/AuthScreen';
@@ -56,6 +57,7 @@ const TabIcon: React.FC<{
 // Restaurant Bottom Tabs
 const RestaurantTabs: React.FC = () => {
   const { colors, isDarkMode } = useTheme();
+  const insets = useSafeAreaInsets();
 
   return (
     <RestaurantTab.Navigator
@@ -65,8 +67,8 @@ const RestaurantTabs: React.FC = () => {
           backgroundColor: colors.background,
           borderTopWidth: 1,
           borderTopColor: colors.border,
-          height: Platform.OS === 'ios' ? 85 : 70,
-          paddingBottom: Platform.OS === 'ios' ? 20 : 12,
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom,
           paddingTop: 8,
         },
         tabBarActiveTintColor: colors.primary,
@@ -117,6 +119,7 @@ const RestaurantTabs: React.FC = () => {
 // Shelter Bottom Tabs
 const ShelterTabs: React.FC = () => {
   const { colors, isDarkMode } = useTheme();
+  const insets = useSafeAreaInsets();
 
   return (
     <ShelterTab.Navigator
@@ -126,8 +129,8 @@ const ShelterTabs: React.FC = () => {
           backgroundColor: colors.background,
           borderTopWidth: 1,
           borderTopColor: colors.border,
-          height: Platform.OS === 'ios' ? 85 : 70,
-          paddingBottom: Platform.OS === 'ios' ? 20 : 12,
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom,
           paddingTop: 8,
         },
         tabBarActiveTintColor: colors.primary,

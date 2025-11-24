@@ -11,6 +11,7 @@ import {
   Platform,
   SafeAreaView,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Check } from 'lucide-react-native';
 import { useNavigation as useReactNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -37,6 +38,7 @@ type NavigationProp = StackNavigationProp<RootStackParamList>;
 export const RestaurantDashboard: React.FC = () => {
   const { isDarkMode, colors, typography, borderRadius, spacing, shadows } = useTheme();
   const { state } = useAuth();
+  const insets = useSafeAreaInsets();
   const navigation = useReactNavigation<NavigationProp>();
   const styles = getStyles(isDarkMode, colors, typography, borderRadius, spacing, shadows);
   const { showSuccessAlert, showErrorAlert, showConfirmAlert, AlertComponent } = useCustomAlert();
@@ -195,22 +197,26 @@ export const RestaurantDashboard: React.FC = () => {
                 </View>
 
                 <View style={styles.itemCardMeta}>
-                  <View style={styles.metaItem}>
-                    <Text style={styles.metaLabel}>Quantity:</Text>
-                    <Text style={styles.metaText}>{item.quantity}</Text>
-                  </View>
-                  <View style={styles.metaItem}>
-                    <Text style={styles.metaLabel}>Expires:</Text>
-                    <Text style={styles.metaText}>
-                      {formatShortDate(item.expiryTime)}
-                    </Text>
+                  <View style={styles.metaRow}>
+                    <View style={styles.metaItem}>
+                      <Text style={styles.metaLabel}>Qty:</Text>
+                      <Text style={styles.metaText}>{item.quantity}</Text>
+                    </View>
+                    <View style={styles.metaItem}>
+                      <Text style={styles.metaLabel}>Expires:</Text>
+                      <Text style={styles.metaText} numberOfLines={1} ellipsizeMode="tail">
+                        {formatShortDate(item.expiryTime)}
+                      </Text>
+                    </View>
                   </View>
                   {item.requests && item.requests.length > 0 && (
-                    <View style={styles.metaItem}>
-                      <Text style={styles.metaLabel}>Requests:</Text>
-                      <Text style={styles.metaText}>
-                        {item.requests.filter(req => req.status === 'requested').length}
-                      </Text>
+                    <View style={styles.metaRowSingle}>
+                      <View style={styles.metaItem}>
+                        <Text style={styles.metaLabel}>Requests:</Text>
+                        <Text style={styles.metaText}>
+                          {item.requests.filter(req => req.status === 'requested').length}
+                        </Text>
+                      </View>
                     </View>
                   )}
                 </View>
@@ -224,7 +230,7 @@ export const RestaurantDashboard: React.FC = () => {
           )}
         </View>
 
-        <View style={[styles.bottomSpacing, { height: Platform.OS === 'ios' ? 100 : 85 }]} />
+        <View style={[styles.bottomSpacing, { height: insets.bottom + 85 }]} />
       </ScrollView>
 
       {/* Request Management Modal */}
@@ -478,28 +484,40 @@ const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadi
       width: '100%',
     },
     itemCardMeta: {
-      flexDirection: 'row',
-      gap: spacing.lg,
       marginBottom: spacing.sm,
       paddingVertical: spacing.md,
       paddingHorizontal: spacing.md,
       backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)',
       borderRadius: borderRadius.md,
     },
+    metaRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: spacing.xs,
+    },
+    metaRowSingle: {
+      flexDirection: 'row',
+      justifyContent: 'flex-start',
+    },
     metaItem: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.xs,
+      flex: 1,
+      maxWidth: '48%',
     },
     metaLabel: {
-      fontSize: 12,
+      fontSize: 11,
       color: colors.textSecondary,
       fontWeight: '600',
+      flexShrink: 0,
     },
     metaText: {
-      fontSize: 13,
+      fontSize: 12,
       color: colors.primary,
       fontWeight: '700',
+      flexShrink: 1,
+      textAlign: 'right',
     },
     itemCardFooter: {
       flexDirection: 'row',

@@ -7,6 +7,7 @@ import {
   Image,
   SafeAreaView,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Plus } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../context/ThemeContext';
@@ -25,7 +26,8 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const navigation = useNavigation();
   const { isDarkMode, colors, typography, borderRadius, spacing, shadows } = useTheme();
-  const styles = getStyles(isDarkMode, colors, typography, borderRadius, spacing, shadows);
+  const insets = useSafeAreaInsets();
+  const styles = getStyles(isDarkMode, colors, typography, borderRadius, spacing, shadows, insets);
 
   const handleLogoPress = () => {
     // Navigate back to dashboard/home tab when logo is pressed
@@ -39,55 +41,51 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
-        {showLogo && (
+    <View style={styles.header}>
+      {showLogo && (
+        <TouchableOpacity
+          onPress={handleLogoPress}
+          activeOpacity={0.7}
+          style={styles.leftSection}
+        >
+          <Image
+            source={require('../../../ShareBiteLogo.jpg')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+      )}
+      
+      {!showLogo && <View style={styles.leftSection} />}
+
+      <View style={styles.centerSection}>
+        <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">{title}</Text>
+      </View>
+
+      <View style={styles.rightSection}>
+        {showShareButton && (
           <TouchableOpacity
-            onPress={handleLogoPress}
+            onPress={handleSharePress}
+            style={styles.shareButton}
             activeOpacity={0.7}
-            style={styles.leftSection}
           >
-            <Image
-              source={require('../../../ShareBiteLogo.jpg')}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
+            <Plus size={20} color={colors.surface} strokeWidth={2.5} />
           </TouchableOpacity>
         )}
-        
-        {!showLogo && <View style={styles.leftSection} />}
-
-        <View style={styles.centerSection}>
-          <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">{title}</Text>
-        </View>
-
-        <View style={styles.rightSection}>
-          {showShareButton && (
-            <TouchableOpacity
-              onPress={handleSharePress}
-              style={styles.shareButton}
-              activeOpacity={0.7}
-            >
-              <Plus size={20} color={colors.surface} strokeWidth={2.5} />
-            </TouchableOpacity>
-          )}
-        </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
-const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadius: any, spacing: any, shadows: any) =>
+const getStyles = (isDarkMode: boolean, colors: any, typography: any, borderRadius: any, spacing: any, shadows: any, insets: any) =>
   StyleSheet.create({
-    safeArea: {
-      backgroundColor: colors.surface,
-    },
     header: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       paddingHorizontal: spacing.lg,
-      paddingVertical: spacing.md,
+      paddingTop: insets.top + spacing.sm,
+      paddingBottom: spacing.md,
       backgroundColor: colors.surface,
       borderBottomWidth: 1,
       borderBottomColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',

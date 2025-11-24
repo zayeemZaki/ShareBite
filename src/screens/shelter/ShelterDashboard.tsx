@@ -10,6 +10,7 @@ import {
   Dimensions,
   SafeAreaView,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapPin, Package, Clock, Check, AlertTriangle, FileText, Calendar, Store } from 'lucide-react-native';
 import { Header } from '../../components/common/Header';
 import { Button } from '../../components/common/Button';
@@ -23,6 +24,7 @@ const { width } = Dimensions.get('window');
 export const ShelterDashboard: React.FC = () => {
   const { state } = useAuth();
   const { colors, typography, borderRadius, spacing, shadows, isDarkMode } = useTheme();
+  const insets = useSafeAreaInsets();
   const styles = getStyles(isDarkMode, colors, typography, borderRadius, spacing, shadows);
   const { showSuccessAlert, showErrorAlert, showConfirmAlert, showInfoAlert, AlertComponent } = useCustomAlert();
 
@@ -400,7 +402,7 @@ export const ShelterDashboard: React.FC = () => {
           </View>
         )}
 
-        <View style={[styles.bottomSpacing, { height: Platform.OS === 'ios' ? 100 : 85 }]} />
+        <View style={[styles.bottomSpacing, { height: insets.bottom + 85 }]} />
       </ScrollView>
 
         {AlertComponent}
